@@ -12,6 +12,7 @@ class Scheduler {
     public:
         void addTask(TaskManager);
         void showTasks(); 
+        void removeTask(int);
 };
 
 #endif
