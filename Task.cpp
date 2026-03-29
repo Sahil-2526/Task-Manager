@@ -60,15 +60,13 @@ string TaskManager::getDeadline(){
 }
 
 
-int main(){
-    TaskManager t1("task1",1,"2024-06-01 12:00:00","2024-06-10 12:00:00","pending");
-    cout<<"Task: "<<t1.getTask()<<endl;
-    cout<<"ID: "<<t1.getId()<<endl;
-    cout<<"Status: "<<t1.getStatus()<<endl;
-    cout<<"Importance Level: "<<t1.getImportanceLvL()<<endl;
-    cout<<"Estimated Time: "<<t1.getEstimatedTime()<<endl;
-    cout<<"Deadline: "<<t1.getDeadline()<<endl;
-    return 0;
+void TaskManager::showTask(){
+    cout<<"Task: "<<getTask()<<endl;
+    cout<<"ID: "<<getId()<<endl;
+    cout<<"Status: "<<getStatus()<<endl;
+    cout<<"Importance Level: "<<getImportanceLvL()<<endl;
+    cout<<"Estimated Time: "<<getEstimatedTime()<<endl;
+    cout<<"Deadline: "<<getDeadline()<<endl;
 }
 
 

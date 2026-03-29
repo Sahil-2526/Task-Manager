@@ -19,7 +19,6 @@ private:
 public:
     TaskManager(std::string,int,std::string,std::string,std::string);
     void showTask();
-    int addTask(std::string);
 
     //getters function
     int getId();
