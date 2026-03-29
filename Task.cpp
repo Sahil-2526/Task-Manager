@@ -8,7 +8,7 @@
 
 using namespace std;
 
-// string to time converting function
+// string to time  and vice versa converting function
 tm TaskManager::stringToTime(string s){
     tm time={};
     istringstream ss(s); // convert string to stream
@@ -20,6 +20,14 @@ tm TaskManager::stringToTime(string s){
     }
     return time;
 }
+string timeToString(tm time){
+    ostringstream s;
+    s<<put_time(&time,"%Y-%m-%d %H:%M:%S"); // convert tm to string according to pattern
+    return s.str();
+}
+
+//static variable initialization
+int TaskManager::nextId=1;
 
 // constructor 
 TaskManager::TaskManager(string task,int impLvL,string estimatedTime,string deadline, string status) {
@@ -44,11 +52,23 @@ string TaskManager::getTask(){
 int TaskManager::getImportanceLvL(){
     return importanceLvL;
 }
-tm TaskManager::getEstimatedTime(){
-    return estimatedTime;
+string TaskManager::getEstimatedTime(){
+    return timeToString(estimatedTime);
 }   
-tm TaskManager::getDeadline(){
-    return deadline;
+string TaskManager::getDeadline(){
+    return timeToString(deadline);
+}
+
+
+int main(){
+    TaskManager t1("task1",1,"2024-06-01 12:00:00","2024-06-10 12:00:00","pending");
+    cout<<"Task: "<<t1.getTask()<<endl;
+    cout<<"ID: "<<t1.getId()<<endl;
+    cout<<"Status: "<<t1.getStatus()<<endl;
+    cout<<"Importance Level: "<<t1.getImportanceLvL()<<endl;
+    cout<<"Estimated Time: "<<t1.getEstimatedTime()<<endl;
+    cout<<"Deadline: "<<t1.getDeadline()<<endl;
+    return 0;
 }
 
 

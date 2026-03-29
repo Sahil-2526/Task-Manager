@@ -26,8 +26,8 @@ public:
     std::string getStatus();
     std::string getTask();
     int getImportanceLvL();
-    std::tm getEstimatedTime();
-    std::tm getDeadline();
+    std::string getEstimatedTime();
+    std::string getDeadline();
         
 
 };
