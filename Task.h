@@ -14,7 +14,7 @@ private:
     std::tm estimatedTime;
     std::tm deadline;
     std::string status;
-    std::tm stringToTime(std::string);
+    
 
 public:
     TaskManager(std::string,int,std::string,std::string,std::string);

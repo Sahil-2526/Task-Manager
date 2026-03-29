@@ -12,10 +12,11 @@ void Scheduler::showTasks(){
 }
 
 void Scheduler::removeTask(int id){
+    bool deleted=false;
     for(int i=0;i<tasks.size();i++){
         if(tasks[i].getId()==id){
             tasks.erase(tasks.begin()+i);
-            break;
+            deleted=true;
         }
     }
 }
@@ -27,4 +28,5 @@ void Scheduler::updateTask(int id, string task, int impLvL, string estimatedTime
             break;
         }
     }
+
 }

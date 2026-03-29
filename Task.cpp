@@ -1,4 +1,5 @@
 #include "Task.h"
+#include "Utils.h"
 
 #include <string>
 #include<ctime> // tm
@@ -7,24 +8,6 @@
 #include<iostream>
 
 using namespace std;
-
-// string to time  and vice versa converting function
-tm TaskManager::stringToTime(string s){
-    tm time={};
-    istringstream ss(s); // convert string to stream
-    // helps to extract values sequentially
-    ss>>get_time(&time,"%Y-%m-%d %H:%M:%S"); // automatically separate year,month, ...
-    // get_time() parse ss according to string pattern given and store values in tm
-    if (ss.fail()) { // checks if ss stream parsed successfully  
-        cout << "Invalid Format\n";
-    }
-    return time;
-}
-string timeToString(tm time){
-    ostringstream s;
-    s<<put_time(&time,"%Y-%m-%d %H:%M:%S"); // convert tm to string according to pattern
-    return s.str();
-}
 
 //static variable initialization
 int TaskManager::nextId=1;
