@@ -19,3 +19,12 @@ void Scheduler::removeTask(int id){
         }
     }
 }
+
+void Scheduler::updateTask(int id, string task, int impLvL, string estimatedTime, string deadline, string status){
+    for(int i=0;i<tasks.size();i++){
+        if(tasks[i].getId()==id){
+            tasks[i]=TaskManager(task,impLvL,estimatedTime,deadline,status);
+            break;
+        }
+    }
+}
