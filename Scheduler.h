@@ -11,6 +11,7 @@ class Scheduler {
         std::vector<TaskManager> tasks;
     public:
         void addTask(TaskManager);
+        void showTasks(); 
 };
 
 #endif
