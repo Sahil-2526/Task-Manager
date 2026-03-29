@@ -19,6 +19,13 @@ void Scheduler::removeTask(int id){
             deleted=true;
         }
     }
+
+    for(int i=0;i<tasks.size();i++){
+        if(tasks[i].getId()!=i+1){
+            tasks[i].setId(i+1);
+        }    
+    }
+
 }
 
 void Scheduler::updateTask(int id, string task, int impLvL, string estimatedTime, string deadline, string status){

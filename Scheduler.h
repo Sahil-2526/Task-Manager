@@ -10,10 +10,13 @@ class Scheduler {
     private:
         std::vector<TaskManager> tasks;
     public:
+       // basic functions
         void addTask(TaskManager);
         void showTasks(); 
         void removeTask(int);
         void updateTask(int, string, int, string, string, string);
+
+    
 };
 
 #endif

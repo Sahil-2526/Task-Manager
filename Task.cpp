@@ -42,6 +42,11 @@ string TaskManager::getDeadline(){
     return timeToString(deadline);
 }
 
+//setters function
+void TaskManager::setID(int id){
+    this->id=id;
+}
+
 
 void TaskManager::showTask(){
     cout<<"Task: "<<getTask()<<endl;

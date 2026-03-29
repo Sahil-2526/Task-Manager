@@ -27,7 +27,9 @@ public:
     int getImportanceLvL();
     std::string getEstimatedTime();
     std::string getDeadline();
-        
+
+    //setters function
+    void setId(int);        
 
 };
 
