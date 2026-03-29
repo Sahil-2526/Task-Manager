@@ -21,6 +21,15 @@ public:
     void showTask();
     int addTask(std::string);
 
+    //getters function
+    int getId();
+    std::string getStatus();
+    std::string getTask();
+    int getImportanceLvL();
+    std::tm getEstimatedTime();
+    std::tm getDeadline();
+        
+
 };
 
 #endif

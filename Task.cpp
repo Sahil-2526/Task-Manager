@@ -8,6 +8,7 @@
 
 using namespace std;
 
+// string to time converting function
 tm TaskManager::stringToTime(string s){
     tm time={};
     istringstream ss(s); // convert string to stream
@@ -20,6 +21,7 @@ tm TaskManager::stringToTime(string s){
     return time;
 }
 
+// constructor 
 TaskManager::TaskManager(string task,int impLvL,string estimatedTime,string deadline, string status) {
     this->id=nextId++;
     this->importanceLvL=impLvL;
@@ -27,3 +29,26 @@ TaskManager::TaskManager(string task,int impLvL,string estimatedTime,string dead
     this->deadline=stringToTime(deadline);
     this->status=status;
 }
+
+
+//getters function
+int TaskManager::getId(){
+    return id;
+}
+string TaskManager::getStatus(){
+    return status;
+}
+string TaskManager::getTask(){
+    return task;
+}
+int TaskManager::getImportanceLvL(){
+    return importanceLvL;
+}
+tm TaskManager::getEstimatedTime(){
+    return estimatedTime;
+}   
+tm TaskManager::getDeadline(){
+    return deadline;
+}
+
+
