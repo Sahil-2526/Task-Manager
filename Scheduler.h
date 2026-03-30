@@ -15,7 +15,7 @@ class Scheduler {
         void addTask(TaskManager);
         void showTasks(); 
         void removeTask(int);
-        void updateTask(int, string, int, string, string, string);
+        void updateTask(int, string, int, string, string, Status);
 
         // sorted display functions
         void showSortedTasksByImportance();
