@@ -10,4 +10,7 @@ std::tm stringToTime(std::string);
 //convert time to string
 std::string timeToString(std::tm);
 
+//compare two time
+int compareTime(std::tm,std::tm);
+
 #endif

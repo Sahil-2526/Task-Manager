@@ -24,3 +24,22 @@ std::string timeToString(tm time){
     s<<std::put_time(&time,"%Y-%m-%d %H:%M:%S"); // convert tm to string according to pattern
     return s.str();
 }
+
+// compare two time 
+int compareTime(tm t1,tm t2){
+    if(t1.tm_year>t2.tm_year) return 1;
+    if(t1.tm_mon>t2.tm_mon) return 1;
+    if(t1.tm_mday>t2.tm_mday) return 1;
+    if(t1.tm_hour>t2.tm_hour) return 1;
+    if(t1.tm_min>t2.tm_min) return 1;
+    if(t1.tm_sec>t2.tm_sec) return 1;
+
+    if(t1.tm_year<t2.tm_year) return -1;
+    if(t1.tm_mon<t2.tm_mon) return -1;
+    if(t1.tm_mday<t2.tm_mday) return -1;
+    if(t1.tm_hour<t2.tm_hour) return -1;
+    if(t1.tm_min<t2.tm_min) return -1;
+    if(t1.tm_sec<t2.tm_sec) return -1;
+
+    return 0;
+}

@@ -1,4 +1,7 @@
 #include "Scheduler.h"
+#include "Utils.h"
+
+#include <algorithm> // sort
 
 // basic functions
 void Scheduler::addTask(TaskManager task){
@@ -39,9 +42,19 @@ void Scheduler::updateTask(int id, string task, int impLvL, string estimatedTime
 }
 
 // sorted display functions
-void Scheduler::showTasksByImportance(){
+void Scheduler::showSortedTasksByImportance(){
     vector<TaskManager> sortedTasks=tasks;
     sort(sortedTasks.begin(),sortedTasks.end(),[](TaskManager t1, TaskManager t2){ // custom comparator function to sort by importance level by descending order
         return t1.getImportanceLvL()>t2.getImportanceLvL();  
     });
+}
+
+void Scheduler::showSortedTasksByDeadline(){
+    vector<TaskManager> sortedTasks=tasks;
+    sort(sortedTasks.begin(),sortedTasks.end(),[](TaskManager t1,TaskManager t2){
+        return compareTime(stringToTime(t1.getDeadline()),stringToTime(t2.getDeadline()))==-1; // custom comparator function to sort by deadline by ascending order
+    });
+    for(TaskManager t:sortedTasks){
+        t.showTask();
+    }
 }

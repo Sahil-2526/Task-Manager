@@ -3,7 +3,7 @@
 
 #include "Task.h"
 #include <vector> // tasks vector
-#include <algorithm> // sort
+
 
 using namespace std;
 
@@ -18,7 +18,8 @@ class Scheduler {
         void updateTask(int, string, int, string, string, string);
 
         // sorted display functions
-        void showTasksByImportance();
+        void showSortedTasksByImportance();
+        void showSortedTasksByDeadline();
     
 };
 

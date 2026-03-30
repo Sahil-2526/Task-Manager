@@ -4,9 +4,6 @@
 
 #include <string>
 #include<ctime> // tm
-#include<sstream> // istringstream
-#include<iomanip> // get_time
-#include<iostream> //cout 
 
 class TaskManager {
 private:
