@@ -70,28 +70,25 @@ void Scheduler::showSortedTasksByEstimatedTime(){
     }
 }
 
-// arranged display functions
-void Scheduler::showTasksByStatus(string status){
-    if(status!="Pending" && status!="In Progress" && status!="Completed" && status!="All"){
+void Scheduler::showTasksByStatus(Status status){
+    if(status!=Status::Pending && status!=Status::InProgress && status!=Status::Completed){
         cout<<"Invalid Status\n";
         return;
     }
-    if(status=="All"){
-        cout<<"All Tasks:\n";
-        cout<<"------------------\n";
-        cout<<"PENDING TASKS:\n";
-        showTasksByStatus("Pending");
-        cout<<"IN PROGRESS TASKS:\n";
-        showTasksByStatus("In Progress");
-        cout<<"COMPLETED TASKS:\n";
-        showTasksByStatus("Completed");
-
-    }
-    else{
-        for(TaskManager t:tasks){
-            if(t.getStatus()==status){
-                t.showTask();
-            }
+    for(TaskManager t:tasks){
+        if(t.getStatus()==statusToString(status)){
+            t.showTask();
         }
     }
+}
+
+// arranged display functions
+void Scheduler::showArrangedTasksByStatus(Status status){
+    cout<<"All Tasks:\n";
+    cout<<"Pending Tasks:\n";
+    showTasksByStatus(Status::Pending);
+    cout<<"In Progress Tasks:\n";
+    showTasksByStatus(Status::InProgress);
+    cout<<"Completed Tasks:\n";
+    showTasksByStatus(Status::Completed);
 }

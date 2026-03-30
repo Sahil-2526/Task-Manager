@@ -21,12 +21,10 @@ class Scheduler {
         void showSortedTasksByImportance();
         void showSortedTasksByDeadline();
         void showSortedTasksByEstimatedTime();
+        void showTasksByStatus(Status);
         
-        // arranged display functions
-        void showTasksByStatus(string);
-
-        
-    
+        // arranged display functions   
+        void showArrangedTasksByStatus(Status);
 };
 
 #endif
