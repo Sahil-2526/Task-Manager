@@ -20,6 +20,7 @@ class Scheduler {
         // sorted display functions
         void showSortedTasksByImportance();
         void showSortedTasksByDeadline();
+        void showSortedTasksByEstimatedTime();
     
 };
 
