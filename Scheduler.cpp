@@ -52,7 +52,7 @@ void Scheduler::showSortedTasksByImportance(){
 void Scheduler::showSortedTasksByDeadline(){
     vector<TaskManager> sortedTasks=tasks;
     sort(sortedTasks.begin(),sortedTasks.end(),[](TaskManager t1,TaskManager t2){
-        return compareTime(stringToTime(t1.getDeadline()),stringToTime(t2.getDeadline()))==1; // custom comparator function to sort by deadline by ascending order
+        return compareTime(stringToTime(t1.getDeadline()),stringToTime(t2.getDeadline()))==1; // custom comparator function to sort by deadline by descending order
     });
     for(TaskManager t:sortedTasks){
         t.showTask();
