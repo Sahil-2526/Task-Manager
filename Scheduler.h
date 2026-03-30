@@ -2,7 +2,8 @@
 #define SCHEDULER_GUARD
 
 #include "Task.h"
-#include <vector>
+#include <vector> // tasks vector
+#include <algorithm> // sort
 
 using namespace std;
 
@@ -16,6 +17,8 @@ class Scheduler {
         void removeTask(int);
         void updateTask(int, string, int, string, string, string);
 
+        // sorted display functions
+        void showTasksByImportance();
     
 };
 

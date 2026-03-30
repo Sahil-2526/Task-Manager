@@ -1,12 +1,6 @@
 #include "Task.h"
 #include "Utils.h"
 
-#include <string>
-#include<ctime> // tm
-#include<sstream> // istringstream
-#include<iomanip> // get_time
-#include<iostream>
-
 using namespace std;
 
 //static variable initialization
@@ -43,7 +37,7 @@ string TaskManager::getDeadline(){
 }
 
 //setters function
-void TaskManager::setID(int id){
+void TaskManager::setId(int id){
     this->id=id;
 }
 

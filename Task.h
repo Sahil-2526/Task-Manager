@@ -3,7 +3,10 @@
 #define TASK_GUARD // if not defined this line defines guard
 
 #include <string>
-#include <ctime>
+#include<ctime> // tm
+#include<sstream> // istringstream
+#include<iomanip> // get_time
+#include<iostream> //cout 
 
 class TaskManager {
 private:
