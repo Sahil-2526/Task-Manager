@@ -2,6 +2,7 @@
 #include "Utils.h"
 
 #include <algorithm> // sort
+#include<iostream> // cout
 
 // basic functions
 void Scheduler::addTask(TaskManager task){
@@ -66,5 +67,31 @@ void Scheduler::showSortedTasksByEstimatedTime(){
     });
     for(TaskManager t:sortedTasks){
         t.showTask();
+    }
+}
+
+// arranged display functions
+void Scheduler::showTasksByStatus(string status){
+    if(status!="Pending" && status!="In Progress" && status!="Completed" && status!="All"){
+        cout<<"Invalid Status\n";
+        return;
+    }
+    if(status=="All"){
+        cout<<"All Tasks:\n";
+        cout<<"------------------\n";
+        cout<<"PENDING TASKS:\n";
+        showTasksByStatus("Pending");
+        cout<<"IN PROGRESS TASKS:\n";
+        showTasksByStatus("In Progress");
+        cout<<"COMPLETED TASKS:\n";
+        showTasksByStatus("Completed");
+
+    }
+    else{
+        for(TaskManager t:tasks){
+            if(t.getStatus()==status){
+                t.showTask();
+            }
+        }
     }
 }

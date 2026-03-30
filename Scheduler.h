@@ -22,6 +22,8 @@ class Scheduler {
         void showSortedTasksByDeadline();
         void showSortedTasksByEstimatedTime();
         
+        // arranged display functions
+        void showTasksByStatus(string);
 
         
     
