@@ -43,3 +43,29 @@ int compareTime(tm t1,tm t2){
 
     return 0;
 }
+
+// status to string
+std::string statusToString(Status s){
+    if(s==Status::Pending){
+        return "Pending";
+    }
+    else if(s==Status::InProgress){
+        return "In Progress";
+    }
+    else{
+        return "Completed";
+    }
+}
+
+// string to status
+Status stringToStatus(std::string s){
+    if(s=="Pending"){
+        return Status::Pending;
+    }
+    else if(s=="In Progress"){
+        return Status::InProgress;
+    }
+    else{
+        return Status::Completed;
+    }
+}

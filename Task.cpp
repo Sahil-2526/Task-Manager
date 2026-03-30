@@ -1,5 +1,4 @@
 #include "Task.h"
-#include "Utils.h"
 
 #include<sstream> // istringstream
 #include<iomanip> // get_time
@@ -11,7 +10,7 @@ using namespace std;
 int TaskManager::nextId=1;
 
 // constructor 
-TaskManager::TaskManager(string task,int impLvL,string estimatedTime,string deadline, string status) {
+TaskManager::TaskManager(string task,int impLvL,string estimatedTime,string deadline, Status status) {
     this->id=nextId++;
     this->importanceLvL=impLvL;
     this->estimatedTime=stringToTime(estimatedTime);
@@ -25,7 +24,7 @@ int TaskManager::getId(){
     return id;
 }
 string TaskManager::getStatus(){
-    return status;
+    return statusToString(status);
 }
 string TaskManager::getTask(){
     return task;

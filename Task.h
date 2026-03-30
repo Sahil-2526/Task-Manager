@@ -5,6 +5,8 @@
 #include <string>
 #include<ctime> // tm
 
+#include "Utils.h"
+
 class TaskManager {
 private:
     static int nextId;
@@ -13,11 +15,14 @@ private:
     int importanceLvL;
     std::tm estimatedTime;
     std::tm deadline;
-    std::string status;
+    Status status;
     
 
 public:
-    TaskManager(std::string,int,std::string,std::string,std::string);
+    // constructor
+    TaskManager(std::string,int,std::string,std::string,Status);
+
+    // display function
     void showTask();
 
     //getters function
@@ -33,7 +38,7 @@ public:
 
 };
 
-#endif
+#endif 
 
 // Note =>
 // In abc.h is not prefered to use "using namespace std;"

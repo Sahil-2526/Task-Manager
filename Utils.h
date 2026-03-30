@@ -4,6 +4,9 @@
 #include<string>
 #include<ctime>
 
+// status enum
+enum class Status {Pending, InProgress, Completed};
+
 //convert string to time
 std::tm stringToTime(std::string);
 
@@ -12,5 +15,11 @@ std::string timeToString(std::tm);
 
 //compare two time
 int compareTime(std::tm,std::tm);
+
+//status to string
+std::string statusToString(Status);
+
+//string to status
+Status stringToStatus(std::string);
 
 #endif
