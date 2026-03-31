@@ -11,6 +11,13 @@ using namespace std;
 // basic functions
 void Scheduler::addTask(TaskManager task){
     tasks.push_back(task);
+    updateScore();
+    if(tasks.size()>0){
+        cout<<"Task added successfully.\n";
+    }
+    else{
+        cout<<"Failed to add task.\n";
+    }
 }
 
 void Scheduler::showTasks(){

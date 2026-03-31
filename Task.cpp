@@ -46,6 +46,27 @@ void TaskManager::setId(int id){
 void TaskManager::setScore(double score){
     this->score=score;
 }
+void TaskManager::setStatus(Status status){
+    this->status=status;
+    if(status==Status::Completed){
+        importanceLvL=0;
+        estimatedTime=stringToTime("1970-01-01 00:00:00"); 
+        deadline=stringToTime("1970-01-01 00:00:00"); 
+        double score = 0.0;
+    }
+    
+}
+void TaskManager::setTask(string task){
+    this->task=task;
+}
+void TaskManager::setImportanceLvL(int importanceLvL){
+    this->importanceLvL=importanceLvL;
+}
+void TaskManager::setEstimatedTime(string estimatedTime){
+    this->estimatedTime=stringToTime(estimatedTime);
+}
+void TaskManager::setDeadline(string deadline){
+    this->deadline=stringToTime(deadline); }
 
 
 void TaskManager::showTask(){

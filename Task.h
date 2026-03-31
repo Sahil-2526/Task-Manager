@@ -36,7 +36,12 @@ public:
 
     //setters function
     void setId(int);   
-    void setScore(double);     
+    void setScore(double);    
+    void setStatus(Status);
+    void setTask(std::string);
+    void setImportanceLvL(int);
+    void setEstimatedTime(std::string);
+    void setDeadline(std::string); 
 
 };
 
