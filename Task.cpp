@@ -12,37 +12,37 @@ int TaskManager::nextId=1;
 // constructor 
 TaskManager::TaskManager(string task,int impLvL,string estimatedTime,string deadline, Status status) {
     this->id=nextId++;
-    this->task = task; // FIXED: Missing task assignment
+    this->task = task; 
     this->importanceLvL=impLvL;
     this->estimatedTime=stringToTime(estimatedTime);
     this->deadline=stringToTime(deadline);
     this->status=status;
 }
 
-//getters function
-int TaskManager::getId(){
+// getters function (FIXED: Added const to match header)
+int TaskManager::getId() const {
     return id;
 }
-string TaskManager::getStatus(){
+string TaskManager::getStatus() const {
     return statusToString(status);
 }
-string TaskManager::getTask(){
+string TaskManager::getTask() const {
     return task;
 }
-int TaskManager::getImportanceLvL(){
+int TaskManager::getImportanceLvL() const {
     return importanceLvL;
 }
-string TaskManager::getEstimatedTime(){
+string TaskManager::getEstimatedTime() const {
     return timeToString(estimatedTime);
 }   
-string TaskManager::getDeadline(){
+string TaskManager::getDeadline() const {
     return timeToString(deadline);
 }
-double TaskManager::getScore(){
+double TaskManager::getScore() const {
     return score;
 }
 
-//setters function
+// setters function
 void TaskManager::setId(int id){
     this->id=id;
 }
@@ -55,7 +55,7 @@ void TaskManager::setStatus(Status status){
         importanceLvL=0;
         estimatedTime=stringToTime("1970-01-01 00:00:00"); 
         deadline=stringToTime("1970-01-01 00:00:00"); 
-        this->score = 0.0; // FIXED: local variable shadowing removed
+        this->score = 0.0; 
     }
 }
 void TaskManager::setTask(string task){
@@ -71,7 +71,7 @@ void TaskManager::setDeadline(string deadline){
     this->deadline=stringToTime(deadline); 
 }
 
-void TaskManager::showTask(){
+void TaskManager::showTask() const { // FIXED: Added const
     cout<<"Task: "<<getTask()<<endl;
     cout<<"ID: "<<getId()<<endl;
     cout<<"Status: "<<getStatus()<<endl;

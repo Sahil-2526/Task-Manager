@@ -1,3 +1,7 @@
 {
-    "C_Cpp.default.compilerPath": "c:\\MinGW\\bin\\g++.exe"
+    "C_Cpp.default.compilerPath": "c:\\MinGW\\bin\\g++.exe",
+    "qt-core.qtInstallationRoot": "C:\\Qt",
+    "cmake.configureSettings": {
+        "Qt6_DIR": "C:/Qt/6.5.0/mingw_64/lib/cmake/Qt6"
+    }
 }
