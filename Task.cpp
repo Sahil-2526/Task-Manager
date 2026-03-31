@@ -38,6 +38,9 @@ string TaskManager::getEstimatedTime(){
 string TaskManager::getDeadline(){
     return timeToString(deadline);
 }
+double TaskManager::getScore(){
+    return score;
+}
 
 //setters function
 void TaskManager::setId(int id){

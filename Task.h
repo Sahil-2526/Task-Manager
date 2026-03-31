@@ -33,6 +33,7 @@ public:
     int getImportanceLvL();
     std::string getEstimatedTime();
     std::string getDeadline();
+    double getScore();
 
     //setters function
     void setId(int);   

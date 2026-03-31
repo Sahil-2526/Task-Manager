@@ -28,6 +28,9 @@ class Scheduler {
         double avgEstimatedTime();
         double avgTimeToDeadline();
         double avgImportanceLevel();
+
+        // next task function
+        TaskManager nextTask();
         
 };
 

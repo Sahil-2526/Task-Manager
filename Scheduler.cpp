@@ -178,3 +178,17 @@ double Scheduler::avgImportanceLevel(){
     }
     return totalImportance/tasks.size(); 
 }
+
+// next task function
+TaskManager Scheduler::nextTask(){
+    if(tasks.size()==0){
+        throw invalid_argument("No tasks available."); // throw custom error if no tasks are available
+    }
+    TaskManager* next=nullptr;
+    for(TaskManager& t:tasks){
+        if(next==nullptr || t.getScore()>next->getScore()){
+            next=&t;
+        }
+    }
+    return *next;
+}
