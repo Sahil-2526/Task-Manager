@@ -7,6 +7,9 @@
 #include <vector> // vector
 #include <stdexcept> // invalid_argument
 
+#include <fstream>
+#include <sstream>
+
 using namespace std;
 
 // basic functions
@@ -208,4 +211,47 @@ TaskManager Scheduler::nextTask(){
         }
     }
     return *next;
+}
+
+// file handling functions
+
+void Scheduler::saveToFile(const std::string& filename) {
+    std::ofstream file(filename);
+    if (!file.is_open()) return;
+
+    for (auto& t : tasks) {
+        file << t.getId() << "|"
+             << t.getTask() << "|"
+             << t.getImportanceLvL() << "|"
+             << t.getEstimatedTime() << "|"
+             << t.getDeadline() << "|"
+             << t.getStatus() << "\n";
+    }
+    file.close();
+}
+
+void Scheduler::loadFromFile(const std::string& filename) {
+    std::ifstream file(filename);
+    if (!file.is_open()) return;
+
+    tasks.clear();
+    std::string line;
+    while (std::getline(file, line)) {
+        std::stringstream ss(line);
+        std::string idStr, taskName, impStr, est, dead, statusStr;
+
+        std::getline(ss, idStr, '|');
+        std::getline(ss, taskName, '|');
+        std::getline(ss, impStr, '|');
+        std::getline(ss, est, '|');
+        std::getline(ss, dead, '|');
+        std::getline(ss, statusStr, '|');
+
+        if(taskName.empty()) continue;
+
+        TaskManager t(taskName, std::stoi(impStr), est, dead, stringToStatus(statusStr));
+        t.setId(std::stoi(idStr)); // Restore the original ID
+        tasks.push_back(t);
+    }
+    updateScore();
 }

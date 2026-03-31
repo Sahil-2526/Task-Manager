@@ -31,6 +31,10 @@ class Scheduler {
 
         // next task function
         TaskManager nextTask();
+
+        // file handling functions
+        void saveToFile(const std::string& filename);
+        void loadFromFile(const std::string& filename);
         
 };
 
