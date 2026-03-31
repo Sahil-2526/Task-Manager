@@ -22,4 +22,8 @@ std::string statusToString(Status);
 //string to status
 Status stringToStatus(std::string);
 
+// tm to time_t
+time_t tmTotime_t(std::tm);
+
+
 #endif

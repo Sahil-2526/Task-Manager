@@ -69,3 +69,7 @@ Status stringToStatus(std::string s){
         return Status::Completed;
     }
 }
+
+// tm to time_t
+time_t tmTotime_t(tm time){
+    return mktime(&time); }  // converts tm to time_t // no. of seconds since 1 Jan 1970

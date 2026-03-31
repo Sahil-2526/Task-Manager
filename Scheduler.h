@@ -22,6 +22,10 @@ class Scheduler {
         
         // find task
         TaskManager findTaskById(int);
+
+        //average time functions
+        double averageEstimatedTime();
+        double averageTimeToDeadline();
         
 };
 

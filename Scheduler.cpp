@@ -103,3 +103,26 @@ TaskManager Scheduler::findTaskById(int id){
     }
     throw invalid_argument("Task with the given ID not found."); //  throw custom error if task with the given ID is not found
 }
+
+//average time functions
+double Scheduler::averageEstimatedTime(){
+    if(tasks.size()==0){
+        return 0;
+    }
+    double totalSeconds=0;
+    for(TaskManager t:tasks){
+        totalSeconds+=tmTotime_t(stringToTime(t.getEstimatedTime()));  // time(0) gives current time in seconds since 1 Jan 1970
+    }
+    return totalSeconds/tasks.size(); 
+}
+
+double Scheduler::averageTimeToDeadline(){
+    if(tasks.size()==0){
+        return 0;
+    }
+    double totalSeconds=0;
+    for(TaskManager t:tasks){
+        totalSeconds+=tmTotime_t(stringToTime(t.getDeadline()))-time(0); 
+    }
+    return totalSeconds/tasks.size(); 
+}
