@@ -4,9 +4,6 @@
 #include "Task.h"
 #include <vector> // tasks vector
 
-
-using namespace std;
-
 class Scheduler {
     private:
         std::vector<TaskManager> tasks;
@@ -23,8 +20,8 @@ class Scheduler {
         void showSortedTasksByEstimatedTime();
         void showTasksByStatus(Status);
         
-        // arranged display functions   
-        void showArrangedTasksByStatus(Status);
+        // // arranged display functions   
+        // void showArrangedTasksByStatus(Status);
 };
 
 #endif

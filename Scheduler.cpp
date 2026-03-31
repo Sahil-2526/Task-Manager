@@ -3,6 +3,10 @@
 
 #include <algorithm> // sort
 #include<iostream> // cout
+#include<string> // string
+#include<vector> // vector
+
+using namespace std;
 
 // basic functions
 void Scheduler::addTask(TaskManager task){
@@ -70,24 +74,22 @@ void Scheduler::showSortedTasksByEstimatedTime(){
 }
 
 void Scheduler::showTasksByStatus(Status status){
-    if(status!=Status::Pending && status!=Status::InProgress && status!=Status::Completed){
+    if(status!=Status::Pending && status!=Status::InProgress && status!=Status::Completed && status!=Status::All){
         cout<<"Invalid Status\n";
         return;
     }
     for(TaskManager t:tasks){
-        if(t.getStatus()==statusToString(status)){
-            t.showTask();
-        }
-    }
-}
-
-// arranged display functions
-void Scheduler::showArrangedTasksByStatus(Status status){
-    cout<<"All Tasks:\n";
+        if(status==Status::All){
+            cout<<"All Tasks:\n";
     cout<<"Pending Tasks:\n";
     showTasksByStatus(Status::Pending);
     cout<<"In Progress Tasks:\n";
     showTasksByStatus(Status::InProgress);
     cout<<"Completed Tasks:\n";
     showTasksByStatus(Status::Completed);
+        }
+        else if(t.getStatus()==statusToString(status)){
+            t.showTask();
+        }
+    }
 }

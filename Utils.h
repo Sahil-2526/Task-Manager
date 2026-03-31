@@ -5,7 +5,7 @@
 #include<ctime>
 
 // status enum
-enum class Status {Pending, InProgress, Completed};
+enum class Status {Pending, InProgress, Completed,All};
 
 //convert string to time
 std::tm stringToTime(std::string);
