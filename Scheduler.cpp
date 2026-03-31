@@ -32,14 +32,13 @@ void Scheduler::removeTask(int id){
 
 }
 
-void Scheduler::updateTask(int id, string task, int impLvL, string estimatedTime, string deadline, Status status){
+void Scheduler::updateTask(int id, TaskManager& task){
     for(int i=0;i<tasks.size();i++){
         if(tasks[i].getId()==id){
-            tasks[i]=TaskManager(task,impLvL,estimatedTime,deadline,status);
+            tasks[i]=task;
             break;
         }
     }
-
 }
 
 // sorted display functions
