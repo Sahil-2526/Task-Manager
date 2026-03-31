@@ -33,7 +33,13 @@ void Scheduler::removeTask(int id){
             tasks[i].setId(i+1);
         }    
     }
-
+    updateScore();
+    if(deleted){
+        cout<<"Task with ID "<<id<<" deleted successfully.\n";
+    }
+    else{
+        cout<<"Task with ID "<<id<<" not found.\n";
+    }
 }
 
 void Scheduler::updateTask(int id, TaskManager& task){
@@ -45,23 +51,23 @@ void Scheduler::updateTask(int id, TaskManager& task){
     }
 }
 
-void Scheduler::updateScore(TaskManager& task){
-    time_t avgEstimatedTime = tmTotime_t(stringToTime(task.getEstimatedTime()));
-    time_t avgTimeToDeadline = tmTotime_t(stringToTime(task.getDeadline())) - time(0);
-    double avgImportanceLevel = task.getImportanceLvL();
+void Scheduler::updateScore(){
+    double avgEstimated = avgEstimatedTime();
+    double avgDeadlineTime = avgTimeToDeadline();
+    double avgImportance = avgImportanceLevel();
 
     for(TaskManager& t : tasks){
         time_t taskEstimatedTime = tmTotime_t(stringToTime(t.getEstimatedTime()));
         time_t taskDeadline = tmTotime_t(stringToTime(t.getDeadline())) - time(0);
 
-        double importanceScore = static_cast<double>(t.getImportanceLvL()) / (1 + avgImportanceLevel);
+        double importanceScore = static_cast<double>(t.getImportanceLvL()) / (1 + avgImportance);
         double estimatedTimeScore = 1.0;
         if(taskEstimatedTime != 0){
-            estimatedTimeScore = 1.0 - (double)avgEstimatedTime / taskEstimatedTime;
+            estimatedTimeScore = 1.0 - (double)avgEstimated / taskEstimatedTime;
         }
         double deadlineScore = 1.0;
         if(taskDeadline != 0){
-            deadlineScore = 1.0 - (double)avgTimeToDeadline / taskDeadline;
+            deadlineScore = 1.0 - (double)avgDeadlineTime / taskDeadline;
         }
         estimatedTimeScore = std::max(0.1, estimatedTimeScore);
         deadlineScore = std::max(0.1, deadlineScore);
@@ -133,7 +139,7 @@ TaskManager Scheduler::findTaskById(int id){
 }
 
 //average time functions
-double Scheduler::averageEstimatedTime(){
+double Scheduler::avgEstimatedTime(){
     if(tasks.size()==0){
         return 0;
     }
@@ -144,7 +150,7 @@ double Scheduler::averageEstimatedTime(){
     return totalSeconds/tasks.size(); 
 }
 
-double Scheduler::averageTimeToDeadline(){
+double Scheduler::avgTimeToDeadline(){
     if(tasks.size()==0){
         return 0;
     }
