@@ -93,3 +93,13 @@ void Scheduler::showTasksByStatus(Status status){
         }
     }
 }
+
+// find task
+TaskManager Scheduler::findTaskById(int id){
+    for(TaskManager t:tasks){
+        if(t.getId()==id){
+            return t;
+        }
+    }
+    throw invalid_argument("Task with the given ID not found."); //  throw custom error if task with the given ID is not found
+}

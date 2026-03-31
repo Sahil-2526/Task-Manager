@@ -20,8 +20,9 @@ class Scheduler {
         void showSortedTasksByEstimatedTime();
         void showTasksByStatus(Status);
         
-        // // arranged display functions   
-        // void showArrangedTasksByStatus(Status);
+        // find task
+        TaskManager findTaskById(int);
+        
 };
 
 #endif
