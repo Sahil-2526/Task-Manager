@@ -2,9 +2,10 @@
 #include "Utils.h"
 
 #include <algorithm> // sort
-#include<iostream> // cout
-#include<string> // string
-#include<vector> // vector
+#include <iostream> // cout
+#include <string> // string
+#include <vector> // vector
+#include <stdexcept> // invalid_argument
 
 using namespace std;
 
@@ -21,8 +22,13 @@ void Scheduler::addTask(TaskManager task){
 }
 
 void Scheduler::showTasks(){
+    if(tasks.empty()){
+        cout << "No tasks available.\n";
+        return;
+    }
     for(TaskManager t:tasks){
-        t.showTask(); // calling showTask() of TaskManager class for each task in vector
+        t.showTask(); 
+        cout << "---------------------\n";
     }
 }
 
@@ -32,14 +38,11 @@ void Scheduler::removeTask(int id){
         if(tasks[i].getId()==id){
             tasks.erase(tasks.begin()+i);
             deleted=true;
+            break; // FIXED: break out of loop once found
         }
     }
-
-    for(int i=0;i<tasks.size();i++){
-        if(tasks[i].getId()!=i+1){
-            tasks[i].setId(i+1);
-        }    
-    }
+    // FIXED: Removed the logic that loops through and overwrites task IDs
+    
     updateScore();
     if(deleted){
         cout<<"Task with ID "<<id<<" deleted successfully.\n";
@@ -52,10 +55,14 @@ void Scheduler::removeTask(int id){
 void Scheduler::updateTask(int id, TaskManager& task){
     for(int i=0;i<tasks.size();i++){
         if(tasks[i].getId()==id){
+            task.setId(id); // FIXED: Keep the original ID intact
             tasks[i]=task;
-            break;
+            updateScore(); // FIXED: recalculate scores after an update
+            cout<<"Task updated successfully.\n";
+            return;
         }
     }
+    cout<<"Task not found.\n";
 }
 
 void Scheduler::updateScore(){
@@ -89,28 +96,34 @@ void Scheduler::updateScore(){
 // sorted display functions
 void Scheduler::showSortedTasksByImportance(){
     vector<TaskManager> sortedTasks=tasks;
-    sort(sortedTasks.begin(),sortedTasks.end(),[](TaskManager t1, TaskManager t2){ // custom comparator function to sort by importance level by descending order
+    sort(sortedTasks.begin(),sortedTasks.end(),[](TaskManager t1, TaskManager t2){ 
         return t1.getImportanceLvL()>t2.getImportanceLvL();  
     });
+    for(TaskManager t:sortedTasks){ // FIXED: Actually print the sorted results
+        t.showTask();
+        cout << "---------------------\n";
+    }
 }
 
 void Scheduler::showSortedTasksByDeadline(){
     vector<TaskManager> sortedTasks=tasks;
     sort(sortedTasks.begin(),sortedTasks.end(),[](TaskManager t1,TaskManager t2){
-        return compareTime(stringToTime(t1.getDeadline()),stringToTime(t2.getDeadline()))==1; // custom comparator function to sort by deadline by descending order
+        return compareTime(stringToTime(t1.getDeadline()),stringToTime(t2.getDeadline()))==1; 
     });
     for(TaskManager t:sortedTasks){
         t.showTask();
+        cout << "---------------------\n";
     }
 }
 
 void Scheduler::showSortedTasksByEstimatedTime(){
     vector<TaskManager> sortedTasks=tasks;
     sort(sortedTasks.begin(),sortedTasks.end(),[](TaskManager t1,TaskManager t2){
-        return compareTime(stringToTime(t1.getEstimatedTime()),stringToTime(t2.getEstimatedTime()))==-1; // custom comparator function to sort by estimated time by ascending order
+        return compareTime(stringToTime(t1.getEstimatedTime()),stringToTime(t2.getEstimatedTime()))==-1; 
     });
     for(TaskManager t:sortedTasks){
         t.showTask();
+        cout << "---------------------\n";
     }
 }
 
@@ -119,18 +132,22 @@ void Scheduler::showTasksByStatus(Status status){
         cout<<"Invalid Status\n";
         return;
     }
+    
+    // FIXED: Moved Status::All logic entirely OUT of the for loop
+    if(status==Status::All){
+        cout<<"\n--- Pending Tasks ---\n";
+        showTasksByStatus(Status::Pending);
+        cout<<"\n--- In Progress Tasks ---\n";
+        showTasksByStatus(Status::InProgress);
+        cout<<"\n--- Completed Tasks ---\n";
+        showTasksByStatus(Status::Completed);
+        return; 
+    }
+    
     for(TaskManager t:tasks){
-        if(status==Status::All){
-            cout<<"All Tasks:\n";
-    cout<<"Pending Tasks:\n";
-    showTasksByStatus(Status::Pending);
-    cout<<"In Progress Tasks:\n";
-    showTasksByStatus(Status::InProgress);
-    cout<<"Completed Tasks:\n";
-    showTasksByStatus(Status::Completed);
-        }
-        else if(t.getStatus()==statusToString(status)){
+        if(t.getStatus()==statusToString(status)){
             t.showTask();
+            cout << "---------------------\n";
         }
     }
 }
@@ -142,7 +159,7 @@ TaskManager Scheduler::findTaskById(int id){
             return t;
         }
     }
-    throw invalid_argument("Task with the given ID not found."); //  throw custom error if task with the given ID is not found
+    throw invalid_argument("Task with the given ID not found."); 
 }
 
 //average time functions
@@ -152,7 +169,7 @@ double Scheduler::avgEstimatedTime(){
     }
     double totalSeconds=0;
     for(TaskManager t:tasks){
-        totalSeconds+=tmTotime_t(stringToTime(t.getEstimatedTime()));  // time(0) gives current time in seconds since 1 Jan 1970
+        totalSeconds+=tmTotime_t(stringToTime(t.getEstimatedTime()));  
     }
     return totalSeconds/tasks.size(); 
 }
@@ -182,7 +199,7 @@ double Scheduler::avgImportanceLevel(){
 // next task function
 TaskManager Scheduler::nextTask(){
     if(tasks.size()==0){
-        throw invalid_argument("No tasks available."); // throw custom error if no tasks are available
+        throw invalid_argument("No tasks available."); 
     }
     TaskManager* next=nullptr;
     for(TaskManager& t:tasks){

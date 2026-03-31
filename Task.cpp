@@ -1,8 +1,8 @@
 #include "Task.h"
 
-#include<sstream> // istringstream
-#include<iomanip> // get_time
-#include<iostream> //cout 
+#include <sstream> // istringstream
+#include <iomanip> // get_time
+#include <iostream> // cout 
 
 using namespace std;
 
@@ -12,12 +12,12 @@ int TaskManager::nextId=1;
 // constructor 
 TaskManager::TaskManager(string task,int impLvL,string estimatedTime,string deadline, Status status) {
     this->id=nextId++;
+    this->task = task; // FIXED: Missing task assignment
     this->importanceLvL=impLvL;
     this->estimatedTime=stringToTime(estimatedTime);
     this->deadline=stringToTime(deadline);
     this->status=status;
 }
-
 
 //getters function
 int TaskManager::getId(){
@@ -55,9 +55,8 @@ void TaskManager::setStatus(Status status){
         importanceLvL=0;
         estimatedTime=stringToTime("1970-01-01 00:00:00"); 
         deadline=stringToTime("1970-01-01 00:00:00"); 
-        double score = 0.0;
+        this->score = 0.0; // FIXED: local variable shadowing removed
     }
-    
 }
 void TaskManager::setTask(string task){
     this->task=task;
@@ -69,8 +68,8 @@ void TaskManager::setEstimatedTime(string estimatedTime){
     this->estimatedTime=stringToTime(estimatedTime);
 }
 void TaskManager::setDeadline(string deadline){
-    this->deadline=stringToTime(deadline); }
-
+    this->deadline=stringToTime(deadline); 
+}
 
 void TaskManager::showTask(){
     cout<<"Task: "<<getTask()<<endl;
@@ -80,5 +79,3 @@ void TaskManager::showTask(){
     cout<<"Estimated Time: "<<getEstimatedTime()<<endl;
     cout<<"Deadline: "<<getDeadline()<<endl;
 }
-
-

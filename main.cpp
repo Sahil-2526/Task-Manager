@@ -3,13 +3,14 @@
 using namespace std;
 
 int main(){
+      Scheduler scheduler;
     do{
         cout<<"Welcome to Task Manager!\n";
         cout<<"1. Add Task\n";
         cout<<"2. Show Tasks\n";
         cout<<"3. Remove Task\n";
         cout<<"4. Update Task\n";
-        cout<<"5. Show SortedTasks by Importance\n";
+        cout<<"5. Show Sorted Tasks by Importance\n";
         cout<<"6. Show Sorted Tasks by Deadline\n";
         cout<<"7. Show Sorted Tasks by Estimated Time\n";
         cout<<"8. Show Tasks by Status\n";
@@ -18,8 +19,6 @@ int main(){
 
         int choice;
         cin>>choice;
-
-        Scheduler scheduler;
 
         switch(choice){
             case 1:
@@ -100,14 +99,23 @@ int main(){
                 {
                     Status status;
                     string statusStr;
-                    cout<<"Enter status (Pending/InProgress/Completed): ";
+                    cout<<"Enter status (Pending/InProgress/Completed/All): ";
+                    cin.ignore(); // FIXED: Clear newline buffer
                     getline(cin,statusStr);
                     status=stringToStatus(statusStr);
                     scheduler.showTasksByStatus(status);
                 }
                 break;
             case 9:
-                scheduler.nextTask();
+                {
+                    try {
+                        TaskManager next = scheduler.nextTask(); // FIXED: Catch and display the task
+                        cout << "\n--- Next Task To Do ---\n";
+                        next.showTask();
+                    } catch (const invalid_argument& e) {
+                        cout << e.what() << "\n";
+                    }
+                }
                 break;
             case 10:
                 cout<<"Exiting...\n";
