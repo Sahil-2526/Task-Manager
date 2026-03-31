@@ -43,6 +43,9 @@ string TaskManager::getDeadline(){
 void TaskManager::setId(int id){
     this->id=id;
 }
+void TaskManager::setScore(double score){
+    this->score=score;
+}
 
 
 void TaskManager::showTask(){

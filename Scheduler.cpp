@@ -45,6 +45,34 @@ void Scheduler::updateTask(int id, TaskManager& task){
     }
 }
 
+void Scheduler::updateScore(TaskManager& task){
+    time_t avgEstimatedTime = tmTotime_t(stringToTime(task.getEstimatedTime()));
+    time_t avgTimeToDeadline = tmTotime_t(stringToTime(task.getDeadline())) - time(0);
+    double avgImportanceLevel = task.getImportanceLvL();
+
+    for(TaskManager& t : tasks){
+        time_t taskEstimatedTime = tmTotime_t(stringToTime(t.getEstimatedTime()));
+        time_t taskDeadline = tmTotime_t(stringToTime(t.getDeadline())) - time(0);
+
+        double importanceScore = static_cast<double>(t.getImportanceLvL()) / (1 + avgImportanceLevel);
+        double estimatedTimeScore = 1.0;
+        if(taskEstimatedTime != 0){
+            estimatedTimeScore = 1.0 - (double)avgEstimatedTime / taskEstimatedTime;
+        }
+        double deadlineScore = 1.0;
+        if(taskDeadline != 0){
+            deadlineScore = 1.0 - (double)avgTimeToDeadline / taskDeadline;
+        }
+        estimatedTimeScore = std::max(0.1, estimatedTimeScore);
+        deadlineScore = std::max(0.1, deadlineScore);
+        double score = importanceScore * 0.5 +
+                       estimatedTimeScore * 0.25 +
+                       deadlineScore * 0.25;
+
+        t.setScore(score);
+    }
+}
+
 // sorted display functions
 void Scheduler::showSortedTasksByImportance(){
     vector<TaskManager> sortedTasks=tasks;
@@ -125,4 +153,15 @@ double Scheduler::averageTimeToDeadline(){
         totalSeconds+=tmTotime_t(stringToTime(t.getDeadline()))-time(0); 
     }
     return totalSeconds/tasks.size(); 
+}
+
+double Scheduler::avgImportanceLevel(){
+    if(tasks.size()==0){
+        return 0;
+    }
+    double totalImportance=0;
+    for(TaskManager t:tasks){
+        totalImportance+=t.getImportanceLvL();
+    }
+    return totalImportance/tasks.size(); 
 }

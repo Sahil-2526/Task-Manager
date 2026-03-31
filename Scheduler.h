@@ -13,6 +13,7 @@ class Scheduler {
         void showTasks(); 
         void removeTask(int);
         void updateTask(int, TaskManager&);
+        void updateScore(TaskManager&);
 
         // sorted display functions
         void showSortedTasksByImportance();
@@ -26,7 +27,8 @@ class Scheduler {
         //average time functions
         double averageEstimatedTime();
         double averageTimeToDeadline();
+        double avgImportanceLevel();
         
 };
 
-#endif
+#endif 

@@ -16,6 +16,7 @@ private:
     std::tm estimatedTime;
     std::tm deadline;
     Status status;
+    double score;
     
 
 public:
@@ -34,7 +35,8 @@ public:
     std::string getDeadline();
 
     //setters function
-    void setId(int);        
+    void setId(int);   
+    void setScore(double);     
 
 };
 
