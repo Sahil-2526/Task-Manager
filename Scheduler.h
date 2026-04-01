@@ -8,15 +8,17 @@
 class Scheduler {
     private:
         std::vector<TaskManager> tasks;
+        std::vector<TaskManager> recycleBinTasks; // NEW: Recycle Bin storage
     public:
         void addTask(TaskManager);
         void showTasks(); 
-        void removeTask(int);
+        void removeTask(int); // This will now move tasks to the Recycle Bin
         void updateTask(int, TaskManager&);
         void updateScore();
 
         // Getter for GUI access
         const std::vector<TaskManager>& getTasks() const { return tasks; }
+        const std::vector<TaskManager>& getRecycledTasks() const { return recycleBinTasks; } // NEW
 
         void showSortedTasksByImportance();
         void showSortedTasksByDeadline();
@@ -31,11 +33,14 @@ class Scheduler {
 
         TaskManager nextTask();
 
+        // NEW: Recycle Bin features
+        void restoreTask(int);
+        void permanentlyRemoveTask(int);
+        void emptyRecycleBin();
+
         // File handling
         void saveToFile(const std::string& filename);
         void loadFromFile(const std::string& filename);
-
-        // FIXED: Removed the duplicated getTasks() method that was originally placed here
 };
 
 #endif

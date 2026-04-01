@@ -16,7 +16,7 @@
 #include <QFrame>
 #include "Scheduler.h"
 
-// --- Custom Dialog (Keep this mostly the same) ---
+// --- Custom Dialog ---
 class TaskDialog : public QDialog {
     Q_OBJECT
 public:
@@ -48,6 +48,7 @@ private slots:
     void handleSave();
     void handleLoad();
     void refreshTaskList();
+    void handleShowRecycleBin(); // NEW: Slot for opening the Recycle Bin
 
 private:
     void setupUI();

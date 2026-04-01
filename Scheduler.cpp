@@ -35,10 +35,12 @@ void Scheduler::showTasks(){
     }
 }
 
+// --- UPDATED REMOVE TASK (Moves to Recycle Bin) ---
 void Scheduler::removeTask(int id){
     bool deleted=false;
     for(int i=0;i<tasks.size();i++){
         if(tasks[i].getId()==id){
+            recycleBinTasks.push_back(tasks[i]); // NEW: Move to recycle bin
             tasks.erase(tasks.begin()+i);
             deleted=true;
             break; 
@@ -47,7 +49,7 @@ void Scheduler::removeTask(int id){
     
     updateScore();
     if(deleted){
-        cout<<"Task with ID "<<id<<" deleted successfully.\n";
+        cout<<"Task with ID "<<id<<" moved to Recycle Bin.\n";
     }
     else{
         cout<<"Task with ID "<<id<<" not found.\n";
@@ -211,21 +213,55 @@ TaskManager Scheduler::nextTask(){
     return *next;
 }
 
-// file handling functions
+// --- NEW RECYCLE BIN FUNCTIONS ---
+
+void Scheduler::restoreTask(int id){
+    for(int i=0;i<recycleBinTasks.size();i++){
+        if(recycleBinTasks[i].getId()==id){
+            tasks.push_back(recycleBinTasks[i]);
+            recycleBinTasks.erase(recycleBinTasks.begin()+i);
+            updateScore();
+            cout<<"Task restored successfully.\n";
+            return;
+        }
+    }
+}
+
+void Scheduler::permanentlyRemoveTask(int id){
+    for(int i=0;i<recycleBinTasks.size();i++){
+        if(recycleBinTasks[i].getId()==id){
+            recycleBinTasks.erase(recycleBinTasks.begin()+i);
+            cout<<"Task permanently deleted.\n";
+            return;
+        }
+    }
+}
+
+void Scheduler::emptyRecycleBin(){
+    recycleBinTasks.clear();
+    cout<<"Recycle Bin emptied.\n";
+}
+
+// --- UPDATED FILE HANDLING ---
 
 void Scheduler::saveToFile(const std::string& filename) {
     std::ofstream file(filename);
     if (!file.is_open()) return;
 
     for (auto& t : tasks) {
-        file << t.getId() << "|"
-             << t.getTask() << "|"
-             << t.getImportanceLvL() << "|"
-             << t.getEstimatedTime() << "|"
-             << t.getDeadline() << "|"
-             << t.getStatus() << "\n";
+        file << t.getId() << "|" << t.getTask() << "|" << t.getImportanceLvL() << "|"
+             << t.getEstimatedTime() << "|" << t.getDeadline() << "|" << t.getStatus() << "\n";
     }
     file.close();
+
+    // NEW: Save Recycle Bin tasks to a separate file
+    std::ofstream recycleFile("recycle_" + filename);
+    if (!recycleFile.is_open()) return;
+    for (auto& t : recycleBinTasks) {
+        recycleFile << t.getId() << "|" << t.getTask() << "|" << t.getImportanceLvL() << "|"
+             << t.getEstimatedTime() << "|" << t.getDeadline() << "|" << t.getStatus() << "\n";
+    }
+    recycleFile.close();
 }
 
 void Scheduler::loadFromFile(const std::string& filename) {
@@ -251,4 +287,25 @@ void Scheduler::loadFromFile(const std::string& filename) {
         tasks.push_back(t);
     }
     updateScore();
+
+    // NEW: Load Recycle Bin tasks
+    std::ifstream recycleFile("recycle_" + filename);
+    if (!recycleFile.is_open()) return;
+    recycleBinTasks.clear();
+    while (std::getline(recycleFile, line)) {
+        if (line.empty()) continue;
+        std::stringstream ss(line);
+        std::string idStr, taskName, impStr, est, dead, statusStr;
+
+        std::getline(ss, idStr, '|');
+        std::getline(ss, taskName, '|');
+        std::getline(ss, impStr, '|');
+        std::getline(ss, est, '|');
+        std::getline(ss, dead, '|');
+        std::getline(ss, statusStr, '|');
+
+        TaskManager t(taskName, std::stoi(impStr), est, dead, stringToStatus(statusStr));
+        t.setId(std::stoi(idStr)); 
+        recycleBinTasks.push_back(t);
+    }
 }

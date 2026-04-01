@@ -4,6 +4,8 @@
 #include <QGraphicsDropShadowEffect>
 #include <algorithm>
 #include <map>
+#include <functional> // Included for std::function
+#include <memory>     // Included for std::shared_ptr
 
 // --- Qt Charts Includes ---
 #include <QtCharts/QChartView>
@@ -112,12 +114,14 @@ void MainWindow::setupUI() {
     
     QPushButton *btnNext = new QPushButton("Suggest Next Task", sidebar);
     QPushButton *btnStats = new QPushButton("Statistics", sidebar);
+    QPushButton *btnRecycle = new QPushButton("🗑 Recycle Bin", sidebar); 
     QPushButton *btnSave = new QPushButton("Save Data", sidebar);
     QPushButton *btnLoad = new QPushButton("Load Data", sidebar);
 
     sidebarLayout->addWidget(btnAdd);
     sidebarLayout->addWidget(btnNext);
     sidebarLayout->addWidget(btnStats);
+    sidebarLayout->addWidget(btnRecycle); 
     sidebarLayout->addStretch();
     sidebarLayout->addWidget(btnSave);
     sidebarLayout->addWidget(btnLoad);
@@ -176,6 +180,7 @@ void MainWindow::setupUI() {
     connect(btnLoad, &QPushButton::clicked, this, &MainWindow::handleLoad);
     connect(btnStats, &QPushButton::clicked, this, &MainWindow::handleShowStats);
     connect(btnNext, &QPushButton::clicked, this, &MainWindow::handleNextTask);
+    connect(btnRecycle, &QPushButton::clicked, this, &MainWindow::handleShowRecycleBin); 
     connect(filterCombo, &QComboBox::currentTextChanged, this, &MainWindow::refreshTaskList);
     connect(sortCombo, &QComboBox::currentTextChanged, this, &MainWindow::refreshTaskList);
 }
@@ -312,14 +317,14 @@ void MainWindow::handleEditTask(int id) {
 }
 
 void MainWindow::handleRemoveTask(int id) {
-    QMessageBox::StandardButton reply = QMessageBox::question(this, "Confirm", "Are you sure you want to delete this task?", QMessageBox::Yes|QMessageBox::No);
+    QMessageBox::StandardButton reply = QMessageBox::question(this, "Confirm", "Move this task to the Recycle Bin?", QMessageBox::Yes|QMessageBox::No);
     if (reply == QMessageBox::Yes) {
-        scheduler.removeTask(id);
+        scheduler.removeTask(id); 
         refreshTaskList();
     }
 }
 
-// --- NEW STATISTICS IMPLEMENTATION WITH GRAPH ---
+// --- STATISTICS IMPLEMENTATION WITH GRAPH ---
 void MainWindow::handleShowStats() {
     std::vector<TaskManager> currentTasks = scheduler.getTasks();
     if (currentTasks.empty()) {
@@ -394,6 +399,107 @@ void MainWindow::handleShowStats() {
     statsDialog->exec();
 }
 
+// --- NEW RECYCLE BIN DIALOG IMPLEMENTATION ---
+void MainWindow::handleShowRecycleBin() {
+    QDialog *binDialog = new QDialog(this);
+    binDialog->setWindowTitle("Recycle Bin");
+    binDialog->resize(500, 400);
+    binDialog->setAttribute(Qt::WA_DeleteOnClose); // Prevents memory leak when closing dialog
+
+    QVBoxLayout *mainLayout = new QVBoxLayout(binDialog);
+
+    // Header with Empty Button
+    QHBoxLayout *headerLayout = new QHBoxLayout();
+    QLabel *titleLabel = new QLabel("<b>Deleted Tasks</b>", binDialog);
+    QPushButton *btnEmpty = new QPushButton("Empty Recycle Bin", binDialog);
+    btnEmpty->setStyleSheet("background-color: #ef4444; color: white; padding: 5px; font-weight: bold; border-radius: 4px;");
+    
+    headerLayout->addWidget(titleLabel);
+    headerLayout->addStretch();
+    headerLayout->addWidget(btnEmpty);
+    mainLayout->addLayout(headerLayout);
+
+    // Scroll Area for Recycled Tasks
+    QScrollArea *scrollArea = new QScrollArea(binDialog);
+    scrollArea->setWidgetResizable(true);
+    QWidget *container = new QWidget(scrollArea);
+    QVBoxLayout *listLayout = new QVBoxLayout(container);
+    listLayout->setAlignment(Qt::AlignTop);
+    scrollArea->setWidget(container);
+    mainLayout->addWidget(scrollArea);
+
+    // Wrapping lambda in std::shared_ptr to avoid the auto recursive type deduction issue
+    auto refreshBinList = std::make_shared<std::function<void()>>();
+    
+    *refreshBinList = [this, listLayout, binDialog, refreshBinList]() {
+        QLayoutItem *child;
+        while ((child = listLayout->takeAt(0)) != nullptr) {
+            delete child->widget();
+            delete child;
+        }
+
+        const auto& recycled = scheduler.getRecycledTasks();
+        if(recycled.empty()) {
+            QLabel* emptyLabel = new QLabel("Recycle Bin is empty.");
+            emptyLabel->setAlignment(Qt::AlignCenter);
+            emptyLabel->setStyleSheet("color: gray; margin-top: 20px;");
+            listLayout->addWidget(emptyLabel);
+            return;
+        }
+
+        for (const auto& t : recycled) {
+            QFrame *card = new QFrame();
+            card->setFrameShape(QFrame::StyledPanel);
+            card->setStyleSheet("background-color: #f3f4f6; border-radius: 5px; margin: 5px;");
+            QHBoxLayout *cardLayout = new QHBoxLayout(card);
+
+            QLabel *nameLabel = new QLabel(QString("<b>%1</b> (ID: %2)").arg(QString::fromStdString(t.getTask())).arg(t.getId()));
+            
+            // ---> TEXT COLOR CHANGED HERE <---
+            nameLabel->setStyleSheet("color: #374151;"); // Changes the text to a dark slate gray so it's clearly visible
+
+            QPushButton *btnRestore = new QPushButton("Restore");
+            QPushButton *btnDelete = new QPushButton("Delete");
+            
+            btnRestore->setStyleSheet("background-color: #10b981; color: white; padding: 4px 8px; border-radius: 3px;");
+            btnDelete->setStyleSheet("background-color: #ef4444; color: white; padding: 4px 8px; border-radius: 3px;");
+
+            cardLayout->addWidget(nameLabel);
+            cardLayout->addStretch();
+            cardLayout->addWidget(btnRestore);
+            cardLayout->addWidget(btnDelete);
+
+            int tId = t.getId();
+            
+            connect(btnRestore, &QPushButton::clicked, [this, tId, refreshBinList]() {
+                scheduler.restoreTask(tId);
+                (*refreshBinList)(); // Safe execution through dereferenced pointer
+                refreshTaskList();   
+            });
+            
+            connect(btnDelete, &QPushButton::clicked, [this, tId, refreshBinList]() {
+                scheduler.permanentlyRemoveTask(tId);
+                (*refreshBinList)(); 
+            });
+
+            listLayout->addWidget(card);
+        }
+    };
+
+    // Connect the Empty Bin button
+    connect(btnEmpty, &QPushButton::clicked, [this, refreshBinList]() {
+        QMessageBox::StandardButton reply = QMessageBox::question(this, "Confirm Empty", "Are you sure you want to permanently delete all tasks in the Recycle Bin?", QMessageBox::Yes|QMessageBox::No);
+        if (reply == QMessageBox::Yes) {
+            scheduler.emptyRecycleBin();
+            (*refreshBinList)();
+        }
+    });
+
+    // Populate initially
+    (*refreshBinList)();
+    binDialog->exec();
+}
+
 void MainWindow::handleNextTask() {
     try {
         TaskManager bestTask = scheduler.nextTask();
@@ -403,10 +509,11 @@ void MainWindow::handleNextTask() {
 
 void MainWindow::handleSave() {
     scheduler.saveToFile("tasks.txt");
+    QMessageBox::information(this, "Save Successful", "Your tasks and recycle bin have been saved.");
 }
 
 void MainWindow::handleLoad() {
     scheduler.loadFromFile("tasks.txt");
     refreshTaskList();
+    QMessageBox::information(this, "Load Successful", "Your tasks have been loaded.");
 }
-
