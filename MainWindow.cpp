@@ -409,3 +409,4 @@ void MainWindow::handleLoad() {
     scheduler.loadFromFile("tasks.txt");
     refreshTaskList();
 }
+
