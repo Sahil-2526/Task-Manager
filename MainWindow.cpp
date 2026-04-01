@@ -7,13 +7,6 @@
 #include <functional> // Included for std::function
 #include <memory>     // Included for std::shared_ptr
 
-// --- Qt Charts Includes ---
-#include <QtCharts/QChartView>
-#include <QtCharts/QBarSeries>
-#include <QtCharts/QBarSet>
-#include <QtCharts/QBarCategoryAxis>
-#include <QtCharts/QValueAxis>
-
 // ==========================================
 // TASK DIALOG IMPLEMENTATION
 // ==========================================
@@ -113,14 +106,12 @@ void MainWindow::setupUI() {
     btnAdd->setObjectName("primaryButton");
     
     QPushButton *btnNext = new QPushButton("Suggest Next Task", sidebar);
-    QPushButton *btnStats = new QPushButton("Statistics", sidebar);
     QPushButton *btnRecycle = new QPushButton("🗑 Recycle Bin", sidebar); 
     QPushButton *btnSave = new QPushButton("Save Data", sidebar);
     QPushButton *btnLoad = new QPushButton("Load Data", sidebar);
 
     sidebarLayout->addWidget(btnAdd);
     sidebarLayout->addWidget(btnNext);
-    sidebarLayout->addWidget(btnStats);
     sidebarLayout->addWidget(btnRecycle); 
     sidebarLayout->addStretch();
     sidebarLayout->addWidget(btnSave);
@@ -178,7 +169,6 @@ void MainWindow::setupUI() {
     connect(btnAdd, &QPushButton::clicked, this, &MainWindow::handleAddTask);
     connect(btnSave, &QPushButton::clicked, this, &MainWindow::handleSave);
     connect(btnLoad, &QPushButton::clicked, this, &MainWindow::handleLoad);
-    connect(btnStats, &QPushButton::clicked, this, &MainWindow::handleShowStats);
     connect(btnNext, &QPushButton::clicked, this, &MainWindow::handleNextTask);
     connect(btnRecycle, &QPushButton::clicked, this, &MainWindow::handleShowRecycleBin); 
     connect(filterCombo, &QComboBox::currentTextChanged, this, &MainWindow::refreshTaskList);
@@ -322,81 +312,6 @@ void MainWindow::handleRemoveTask(int id) {
         scheduler.removeTask(id); 
         refreshTaskList();
     }
-}
-
-// --- STATISTICS IMPLEMENTATION WITH GRAPH ---
-void MainWindow::handleShowStats() {
-    std::vector<TaskManager> currentTasks = scheduler.getTasks();
-    if (currentTasks.empty()) {
-        QMessageBox::information(this, "Statistics", "No tasks available to analyze.");
-        return;
-    }
-
-    // 1. Aggregating Data (Tasks per Day based on Deadline)
-    std::map<QString, int> tasksPerDay;
-    for (const auto& t : currentTasks) {
-        QString dateStr = QString::fromStdString(t.getDeadline()).left(10); 
-        tasksPerDay[dateStr]++;
-    }
-
-    // 2. Building the Chart Series
-    QBarSeries *series = new QBarSeries();
-    QBarSet *set = new QBarSet("Tasks Due");
-
-    QStringList categories;
-    int maxTasks = 0;
-
-    for (auto const& [date, count] : tasksPerDay) {
-        categories << date;       
-        *set << count;            
-        if (count > maxTasks) {
-            maxTasks = count;
-        }
-    }
-    
-    set->setColor(QColor(59, 130, 246)); 
-    series->append(set);
-
-    // 3. Setting up the Chart
-    QChart *chart = new QChart();
-    chart->addSeries(series);
-    chart->setTitle("Task Workload (Deadlines per Day)");
-    chart->setAnimationOptions(QChart::SeriesAnimations);
-    chart->legend()->setVisible(false);
-
-    // X-Axis
-    QBarCategoryAxis *axisX = new QBarCategoryAxis();
-    axisX->append(categories);
-    chart->addAxis(axisX, Qt::AlignBottom);
-    series->attachAxis(axisX);
-
-    // Y-Axis
-    QValueAxis *axisY = new QValueAxis();
-    axisY->setRange(0, maxTasks + 1); 
-    axisY->setTickCount(maxTasks + 2); 
-    axisY->setLabelFormat("%d");
-    chart->addAxis(axisY, Qt::AlignLeft);
-    series->attachAxis(axisY);
-
-    // 4. Creating the View and Dialog
-    QChartView *chartView = new QChartView(chart);
-    chartView->setRenderHint(QPainter::Antialiasing);
-
-    QDialog *statsDialog = new QDialog(this);
-    statsDialog->setWindowTitle("Task Statistics Dashboard");
-    statsDialog->resize(700, 500); 
-    
-    QVBoxLayout *layout = new QVBoxLayout(statsDialog);
-    layout->addWidget(chartView);
-
-    QString avgStats = QString("<b>Overall Average Task Importance:</b> %1 / 100")
-                        .arg(scheduler.avgImportanceLevel(), 0, 'f', 2);
-    QLabel *avgLabel = new QLabel(avgStats, statsDialog);
-    avgLabel->setAlignment(Qt::AlignCenter);
-    avgLabel->setStyleSheet("font-size: 14px; padding: 10px;");
-    layout->addWidget(avgLabel);
-
-    statsDialog->exec();
 }
 
 // --- NEW RECYCLE BIN DIALOG IMPLEMENTATION ---

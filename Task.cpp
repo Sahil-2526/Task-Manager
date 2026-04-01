@@ -1,8 +1,7 @@
 #include "Task.h"
-
-#include <sstream> // istringstream
-#include <iomanip> // get_time
-#include <iostream> // cout 
+#include <sstream> 
+#include <iomanip> 
+#include <iostream> 
 
 using namespace std;
 
@@ -19,7 +18,7 @@ TaskManager::TaskManager(string task,int impLvL,string estimatedTime,string dead
     this->status=status;
 }
 
-// getters function (FIXED: Added const to match header)
+// getters function 
 int TaskManager::getId() const {
     return id;
 }
@@ -43,12 +42,18 @@ double TaskManager::getScore() const {
 }
 
 // setters function
+void TaskManager::setNextId(int val) {
+    nextId = val; // NEW: Allows scheduler to sync the counter
+}
+
 void TaskManager::setId(int id){
     this->id=id;
 }
+
 void TaskManager::setScore(double score){
     this->score=score;
 }
+
 void TaskManager::setStatus(Status status){
     this->status=status;
     if(status==Status::Completed){
@@ -71,7 +76,7 @@ void TaskManager::setDeadline(string deadline){
     this->deadline=stringToTime(deadline); 
 }
 
-void TaskManager::showTask() const { // FIXED: Added const
+void TaskManager::showTask() const { 
     cout<<"Task: "<<getTask()<<endl;
     cout<<"ID: "<<getId()<<endl;
     cout<<"Status: "<<getStatus()<<endl;

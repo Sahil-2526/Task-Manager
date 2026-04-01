@@ -43,12 +43,12 @@ private slots:
     void handleAddTask();
     void handleEditTask(int id);
     void handleRemoveTask(int id);
-    void handleShowStats();
+    // void handleShowStats(); <--- REMOVED
     void handleNextTask();
     void handleSave();
     void handleLoad();
     void refreshTaskList();
-    void handleShowRecycleBin(); // NEW: Slot for opening the Recycle Bin
+    void handleShowRecycleBin(); // Slot for opening the Recycle Bin
 
 private:
     void setupUI();

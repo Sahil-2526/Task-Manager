@@ -8,17 +8,20 @@
 class Scheduler {
     private:
         std::vector<TaskManager> tasks;
-        std::vector<TaskManager> recycleBinTasks; // NEW: Recycle Bin storage
+        std::vector<TaskManager> recycleBinTasks; 
+        
+        void reassignIds(); // NEW: Helper to dynamically renumber all tasks
+
     public:
         void addTask(TaskManager);
         void showTasks(); 
-        void removeTask(int); // This will now move tasks to the Recycle Bin
+        void removeTask(int); 
         void updateTask(int, TaskManager&);
         void updateScore();
 
         // Getter for GUI access
         const std::vector<TaskManager>& getTasks() const { return tasks; }
-        const std::vector<TaskManager>& getRecycledTasks() const { return recycleBinTasks; } // NEW
+        const std::vector<TaskManager>& getRecycledTasks() const { return recycleBinTasks; }
 
         void showSortedTasksByImportance();
         void showSortedTasksByDeadline();
@@ -33,7 +36,7 @@ class Scheduler {
 
         TaskManager nextTask();
 
-        // NEW: Recycle Bin features
+        // Recycle Bin features
         void restoreTask(int);
         void permanentlyRemoveTask(int);
         void emptyRecycleBin();

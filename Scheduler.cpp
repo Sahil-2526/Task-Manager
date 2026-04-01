@@ -1,26 +1,38 @@
 #include "Scheduler.h"
 #include "Utils.h"
 
-#include <algorithm> // sort
-#include <iostream> // cout
-#include <string> // string
-#include <vector> // vector
-#include <stdexcept> // invalid_argument
-
+#include <algorithm> 
+#include <iostream> 
+#include <string> 
+#include <vector> 
+#include <stdexcept> 
 #include <fstream>
 #include <sstream>
 
 using namespace std;
 
+// --- DYNAMIC ID REASSIGNMENT ---
+void Scheduler::reassignIds() {
+    int currentId = 1;
+    // Number active tasks first
+    for (auto& t : tasks) {
+        t.setId(currentId++);
+    }
+    // Number recycle bin tasks continuing from active tasks
+    for (auto& t : recycleBinTasks) {
+        t.setId(currentId++);
+    }
+    // Sync the global TaskManager counter so new tasks start at the correct number
+    TaskManager::setNextId(currentId);
+}
+
 // basic functions
 void Scheduler::addTask(TaskManager task){
     tasks.push_back(task);
+    reassignIds(); // NEW: Renumber tasks
     updateScore();
     if(tasks.size()>0){
         cout<<"Task added successfully.\n";
-    }
-    else{
-        cout<<"Failed to add task.\n";
     }
 }
 
@@ -35,20 +47,20 @@ void Scheduler::showTasks(){
     }
 }
 
-// --- UPDATED REMOVE TASK (Moves to Recycle Bin) ---
 void Scheduler::removeTask(int id){
     bool deleted=false;
     for(int i=0;i<tasks.size();i++){
         if(tasks[i].getId()==id){
-            recycleBinTasks.push_back(tasks[i]); // NEW: Move to recycle bin
+            recycleBinTasks.push_back(tasks[i]); 
             tasks.erase(tasks.begin()+i);
             deleted=true;
             break; 
         }
     }
     
-    updateScore();
     if(deleted){
+        reassignIds(); // NEW: Renumber tasks so gaps are closed
+        updateScore();
         cout<<"Task with ID "<<id<<" moved to Recycle Bin.\n";
     }
     else{
@@ -213,13 +225,14 @@ TaskManager Scheduler::nextTask(){
     return *next;
 }
 
-// --- NEW RECYCLE BIN FUNCTIONS ---
+// --- RECYCLE BIN FUNCTIONS ---
 
 void Scheduler::restoreTask(int id){
     for(int i=0;i<recycleBinTasks.size();i++){
         if(recycleBinTasks[i].getId()==id){
             tasks.push_back(recycleBinTasks[i]);
             recycleBinTasks.erase(recycleBinTasks.begin()+i);
+            reassignIds(); // NEW: Renumber tasks 
             updateScore();
             cout<<"Task restored successfully.\n";
             return;
@@ -231,6 +244,7 @@ void Scheduler::permanentlyRemoveTask(int id){
     for(int i=0;i<recycleBinTasks.size();i++){
         if(recycleBinTasks[i].getId()==id){
             recycleBinTasks.erase(recycleBinTasks.begin()+i);
+            reassignIds(); // NEW: Renumber tasks
             cout<<"Task permanently deleted.\n";
             return;
         }
@@ -239,10 +253,11 @@ void Scheduler::permanentlyRemoveTask(int id){
 
 void Scheduler::emptyRecycleBin(){
     recycleBinTasks.clear();
+    reassignIds(); // NEW: Renumber tasks
     cout<<"Recycle Bin emptied.\n";
 }
 
-// --- UPDATED FILE HANDLING ---
+// --- FILE HANDLING ---
 
 void Scheduler::saveToFile(const std::string& filename) {
     std::ofstream file(filename);
@@ -254,7 +269,6 @@ void Scheduler::saveToFile(const std::string& filename) {
     }
     file.close();
 
-    // NEW: Save Recycle Bin tasks to a separate file
     std::ofstream recycleFile("recycle_" + filename);
     if (!recycleFile.is_open()) return;
     for (auto& t : recycleBinTasks) {
@@ -286,9 +300,7 @@ void Scheduler::loadFromFile(const std::string& filename) {
         t.setId(std::stoi(idStr)); 
         tasks.push_back(t);
     }
-    updateScore();
 
-    // NEW: Load Recycle Bin tasks
     std::ifstream recycleFile("recycle_" + filename);
     if (!recycleFile.is_open()) return;
     recycleBinTasks.clear();
@@ -308,4 +320,8 @@ void Scheduler::loadFromFile(const std::string& filename) {
         t.setId(std::stoi(idStr)); 
         recycleBinTasks.push_back(t);
     }
+    
+    // NEW: Automatically fix and renumber all IDs loaded from files!
+    reassignIds(); 
+    updateScore();
 }

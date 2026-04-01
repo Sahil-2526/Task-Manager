@@ -1,10 +1,8 @@
-#ifndef TASK_GUARD  // checks if header is defined already or not (guard)
-// protect file from importing multiple times
-#define TASK_GUARD // if not defined this line defines guard
+#ifndef TASK_GUARD  
+#define TASK_GUARD 
 
 #include <string>
-#include <ctime> // tm
-
+#include <ctime> 
 #include "Utils.h"
 
 class TaskManager {
@@ -23,9 +21,9 @@ public:
     TaskManager(std::string, int, std::string, std::string, Status);
 
     // display function
-    void showTask() const; // FIXED: Marked as const
+    void showTask() const; 
 
-    // getters function (FIXED: All getters marked as const)
+    // getters function 
     int getId() const;
     std::string getStatus() const;
     std::string getTask() const;
@@ -35,6 +33,7 @@ public:
     double getScore() const;
 
     // setters function
+    static void setNextId(int); // NEW: To reset the global counter
     void setId(int);   
     void setScore(double);    
     void setStatus(Status);
@@ -44,15 +43,4 @@ public:
     void setDeadline(std::string); 
 };
 
-#endif 
-
-// Note =>
-// In abc.h is not prefered to use "using namespace std;"
-// std namepsace will be included in every file in whihc its imported in -> namespace clash
-// --------------------------------------------
-// abc.h -> we put all declaration inside it
-//          we include it using #include
-// --------------------------------------------
-// #include <ctime>   ->  tm ( datatype ) -> used to store time ( all value separately )
-// tm time={};  -. make empty structure
-// --------------------------------------------
+#endif
