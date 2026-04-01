@@ -83,7 +83,7 @@ TaskManager TaskDialog::getTaskData(int id) const {
 // MAIN WINDOW IMPLEMENTATION
 // ==========================================
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
-    setWindowTitle("AI Task Scheduler Dashboard");
+    setWindowTitle("Task Scheduler Dashboard");
     resize(1000, 700);
     setupUI();
     scheduler.loadFromFile("tasks.txt");
