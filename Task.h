@@ -10,6 +10,7 @@ private:
     static int nextId;
     int id;
     std::string task;
+    double progress;
     int importanceLvL;
     std::tm estimatedTime;
     std::tm deadline;
@@ -31,6 +32,7 @@ public:
     std::string getEstimatedTime() const;
     std::string getDeadline() const;
     double getScore() const;
+    double getProgress() const;
 
     // setters function
     static void setNextId(int); // NEW: To reset the global counter
@@ -41,6 +43,7 @@ public:
     void setImportanceLvL(int);
     void setEstimatedTime(std::string);
     void setDeadline(std::string); 
+    void setProgess(double);
 };
 
 #endif

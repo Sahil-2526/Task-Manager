@@ -40,6 +40,9 @@ string TaskManager::getDeadline() const {
 double TaskManager::getScore() const {
     return score;
 }
+double TaskManager::getProgress() const {
+    return progress;
+}
 
 // setters function
 void TaskManager::setNextId(int val) {
@@ -75,7 +78,12 @@ void TaskManager::setEstimatedTime(string estimatedTime){
 void TaskManager::setDeadline(string deadline){
     this->deadline=stringToTime(deadline); 
 }
+void TaskManager::setProgess(double progress){
+    this->progress=progress;
+}
 
+
+// display function
 void TaskManager::showTask() const { 
     cout<<"Task: "<<getTask()<<endl;
     cout<<"ID: "<<getId()<<endl;
