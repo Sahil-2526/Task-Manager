@@ -18,14 +18,12 @@
 #include <QProgressBar>
 #include "Scheduler.h"
 
-// --- Custom Dialog ---
 class TaskDialog : public QDialog {
     Q_OBJECT
 public:
     TaskDialog(QWidget *parent = nullptr);
     void setTaskData(const TaskManager& task);
     TaskManager getTaskData(int id = 0) const;
-
 private:
     QLineEdit *nameEdit;
     QSpinBox *importanceSpin;
@@ -35,13 +33,10 @@ private:
     QDoubleSpinBox *progressSpin; 
 };
 
-// --- Main Application Window ---
 class MainWindow : public QMainWindow {
     Q_OBJECT
-
 public:
     MainWindow(QWidget *parent = nullptr);
-
 private slots:
     void handleAddTask();
     void handleEditTask(int id);
@@ -51,19 +46,15 @@ private slots:
     void handleLoad();
     void refreshTaskList();
     void handleShowRecycleBin(); 
-    void handleShowTodayTasks(); // New slot for Today's Tasks
-
+    void handleShowTodayTasks();
 private:
     void setupUI();
     QFrame* createTaskCard(const TaskManager& t); 
-    
     Scheduler scheduler;
-    
     QWidget *taskContainerWidget;
     QVBoxLayout *taskListLayout;
     QComboBox *filterCombo;
     QComboBox *sortCombo;
     QLabel *headerLabel;
 };
-
 #endif

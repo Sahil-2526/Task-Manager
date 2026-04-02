@@ -188,7 +188,7 @@ void MainWindow::setupUI() {
 QFrame* MainWindow::createTaskCard(const TaskManager& t) {
     QFrame *card = new QFrame(taskContainerWidget);
     card->setObjectName("taskCard");
-    card->setFixedHeight(120);
+    card->setFixedHeight(160);
 
     QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(card);
     shadow->setBlurRadius(15);
