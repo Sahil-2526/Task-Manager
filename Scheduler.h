@@ -10,7 +10,7 @@ class Scheduler {
         std::vector<TaskManager> tasks;
         std::vector<TaskManager> recycleBinTasks; 
         
-        void reassignIds(); // NEW: Helper to dynamically renumber all tasks
+        void reassignIds();
 
     public:
         void addTask(TaskManager);

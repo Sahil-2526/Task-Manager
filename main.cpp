@@ -102,7 +102,7 @@ int main(int argc, char *argv[]) {
         #deleteButton:hover { background-color: #ef4444; color: white; }
 
         /* --- INPUTS & DROPDOWNS --- */
-        QComboBox, QLineEdit, QSpinBox, QDateTimeEdit {
+        QComboBox, QLineEdit, QSpinBox, QDoubleSpinBox, QDateTimeEdit {
             background-color: #18181b;
             color: #f4f4f5;
             border: 1px solid #27272a;
@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
             padding: 6px 10px;
             font-size: 13px;
         }
-        QComboBox:focus, QLineEdit:focus, QSpinBox:focus {
+        QComboBox:focus, QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus {
             border: 1px solid #8b5cf6;
         }
         QComboBox::drop-down { border: none; }
@@ -118,6 +118,17 @@ int main(int argc, char *argv[]) {
             background-color: #18181b;
             border: 1px solid #27272a;
             selection-background-color: #8b5cf6;
+        }
+
+        /* --- PROGRESS BAR --- */
+        #taskProgressBar {
+            background-color: #27272a;
+            border: none;
+            border-radius: 3px;
+        }
+        #taskProgressBar::chunk {
+            background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #8b5cf6, stop:1 #6d28d9);
+            border-radius: 3px;
         }
 
         /* --- SCROLLBAR --- */

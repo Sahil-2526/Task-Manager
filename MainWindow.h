@@ -14,6 +14,8 @@
 #include <QScrollArea>
 #include <QLabel>
 #include <QFrame>
+#include <QDoubleSpinBox>
+#include <QProgressBar>
 #include "Scheduler.h"
 
 // --- Custom Dialog ---
@@ -30,6 +32,7 @@ private:
     QDateTimeEdit *estTimeEdit;
     QDateTimeEdit *deadlineEdit;
     QComboBox *statusCombo;
+    QDoubleSpinBox *progressSpin; 
 };
 
 // --- Main Application Window ---
@@ -43,20 +46,18 @@ private slots:
     void handleAddTask();
     void handleEditTask(int id);
     void handleRemoveTask(int id);
-    // void handleShowStats(); <--- REMOVED
     void handleNextTask();
     void handleSave();
     void handleLoad();
     void refreshTaskList();
-    void handleShowRecycleBin(); // Slot for opening the Recycle Bin
+    void handleShowRecycleBin(); 
 
 private:
     void setupUI();
-    QFrame* createTaskCard(const TaskManager& t); // Creates a beautiful UI card for a task
+    QFrame* createTaskCard(const TaskManager& t); 
     
     Scheduler scheduler;
     
-    // UI Elements
     QWidget *taskContainerWidget;
     QVBoxLayout *taskListLayout;
     QComboBox *filterCombo;

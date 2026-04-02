@@ -4,8 +4,8 @@
 #include <QGraphicsDropShadowEffect>
 #include <algorithm>
 #include <map>
-#include <functional> // Included for std::function
-#include <memory>     // Included for std::shared_ptr
+#include <functional> 
+#include <memory>     
 
 // ==========================================
 // TASK DIALOG IMPLEMENTATION
@@ -17,20 +17,21 @@ TaskDialog::TaskDialog(QWidget *parent) : QDialog(parent) {
     QFormLayout *layout = new QFormLayout(this);
 
     nameEdit = new QLineEdit(this);
-    
-    // Updated range from 1-10 to 1-100
     importanceSpin = new QSpinBox(this);
     importanceSpin->setRange(1, 100); 
 
-    // Enabled Calendar Popup for Estimated Time
     estTimeEdit = new QDateTimeEdit(QDateTime::currentDateTime(), this);
     estTimeEdit->setDisplayFormat("yyyy-MM-dd HH:mm:ss");
     estTimeEdit->setCalendarPopup(true); 
     
-    // Enabled Calendar Popup for Deadline
     deadlineEdit = new QDateTimeEdit(QDateTime::currentDateTime().addDays(1), this);
     deadlineEdit->setDisplayFormat("yyyy-MM-dd HH:mm:ss");
     deadlineEdit->setCalendarPopup(true); 
+
+    progressSpin = new QDoubleSpinBox(this);
+    progressSpin->setRange(0.0, 100.0);
+    progressSpin->setSuffix("%");
+    progressSpin->setDecimals(1);
 
     statusCombo = new QComboBox(this);
     statusCombo->addItems({"Pending", "In Progress", "Completed"});
@@ -39,6 +40,7 @@ TaskDialog::TaskDialog(QWidget *parent) : QDialog(parent) {
     layout->addRow("Importance (1-100):", importanceSpin); 
     layout->addRow("Estimated Time:", estTimeEdit);
     layout->addRow("Deadline:", deadlineEdit);
+    layout->addRow("Progress:", progressSpin);
     layout->addRow("Status:", statusCombo);
 
     QDialogButtonBox *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
@@ -51,10 +53,14 @@ TaskDialog::TaskDialog(QWidget *parent) : QDialog(parent) {
 void TaskDialog::setTaskData(const TaskManager& task) {
     nameEdit->setText(QString::fromStdString(task.getTask()));
     importanceSpin->setValue(task.getImportanceLvL());
+    
     QDateTime est = QDateTime::fromString(QString::fromStdString(task.getEstimatedTime()), "yyyy-MM-dd HH:mm:ss");
     estTimeEdit->setDateTime(est.isValid() ? est : QDateTime::currentDateTime());
+    
     QDateTime dead = QDateTime::fromString(QString::fromStdString(task.getDeadline()), "yyyy-MM-dd HH:mm:ss");
     deadlineEdit->setDateTime(dead.isValid() ? dead : QDateTime::currentDateTime());
+    
+    progressSpin->setValue(task.getProgress()); 
     statusCombo->setCurrentText(QString::fromStdString(task.getStatus()));
 }
 
@@ -68,6 +74,7 @@ TaskManager TaskDialog::getTaskData(int id) const {
     if(statusCombo->currentText() == "Completed") stat = Status::Completed;
 
     TaskManager t(name, imp, est, dead, stat);
+    t.setProgess(progressSpin->value()); 
     t.setId(id);
     return t;
 }
@@ -126,7 +133,6 @@ void MainWindow::setupUI() {
     contentLayout->setContentsMargins(40, 30, 40, 30);
     contentLayout->setSpacing(20);
 
-    // Header Controls (Filter/Sort)
     QHBoxLayout *headerControlsLayout = new QHBoxLayout();
     headerLabel = new QLabel("Your Tasks", contentArea);
     headerLabel->setObjectName("headerLabel");
@@ -146,7 +152,6 @@ void MainWindow::setupUI() {
 
     contentLayout->addLayout(headerControlsLayout);
 
-    // Scroll Area for Tasks
     QScrollArea *scrollArea = new QScrollArea(contentArea);
     scrollArea->setWidgetResizable(true);
     scrollArea->setObjectName("taskScrollArea");
@@ -165,7 +170,6 @@ void MainWindow::setupUI() {
     mainLayout->addWidget(contentArea);
     setCentralWidget(centralWidget);
 
-    // --- Connections ---
     connect(btnAdd, &QPushButton::clicked, this, &MainWindow::handleAddTask);
     connect(btnSave, &QPushButton::clicked, this, &MainWindow::handleSave);
     connect(btnLoad, &QPushButton::clicked, this, &MainWindow::handleLoad);
@@ -181,7 +185,6 @@ QFrame* MainWindow::createTaskCard(const TaskManager& t) {
     card->setObjectName("taskCard");
     card->setFixedHeight(120);
 
-    // Shadow Effect
     QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(card);
     shadow->setBlurRadius(15);
     shadow->setOffset(0, 4);
@@ -191,7 +194,6 @@ QFrame* MainWindow::createTaskCard(const TaskManager& t) {
     QHBoxLayout *cardLayout = new QHBoxLayout(card);
     cardLayout->setContentsMargins(20, 15, 20, 15);
 
-    // Left Column: Details
     QVBoxLayout *detailsLayout = new QVBoxLayout();
     QLabel *titleLabel = new QLabel(QString::fromStdString(t.getTask()), card);
     titleLabel->setObjectName("cardTitle");
@@ -206,16 +208,31 @@ QFrame* MainWindow::createTaskCard(const TaskManager& t) {
     QLabel *dateLabel = new QLabel("⏱ Deadline: " + QString::fromStdString(t.getDeadline()), card);
     dateLabel->setObjectName("cardDate");
 
+    // --- VIEW-ONLY PROGRESS BAR ---
+    QHBoxLayout *progressLayout = new QHBoxLayout();
+    QLabel *progressLabel = new QLabel(QString::number(t.getProgress(), 'f', 1) + "%", card);
+    progressLabel->setStyleSheet("color: #a1a1aa; font-size: 12px; font-weight: bold; width: 40px;");
+    
+    QProgressBar *progressBar = new QProgressBar(card);
+    progressBar->setRange(0, 100);
+    progressBar->setValue(static_cast<int>(t.getProgress()));
+    progressBar->setTextVisible(false); // Text is handled by progressLabel
+    progressBar->setFixedHeight(6);
+    progressBar->setObjectName("taskProgressBar");
+
+    progressLayout->addWidget(progressBar);
+    progressLayout->addWidget(progressLabel);
+
     detailsLayout->addWidget(titleLabel);
     detailsLayout->addWidget(infoLabel);
     detailsLayout->addWidget(dateLabel);
+    detailsLayout->addLayout(progressLayout); 
 
     // Middle Column: Status Badge
     QLabel *statusBadge = new QLabel(QString::fromStdString(t.getStatus()), card);
     statusBadge->setObjectName("statusBadge");
     statusBadge->setAlignment(Qt::AlignCenter);
     
-    // Dynamic coloring for status badge
     if(t.getStatus() == "Pending") statusBadge->setStyleSheet("background-color: rgba(245, 158, 11, 0.2); color: #fcd34d;");
     else if(t.getStatus() == "In Progress") statusBadge->setStyleSheet("background-color: rgba(59, 130, 246, 0.2); color: #93c5fd;");
     else statusBadge->setStyleSheet("background-color: rgba(16, 185, 129, 0.2); color: #6ee7b7;");
@@ -230,12 +247,10 @@ QFrame* MainWindow::createTaskCard(const TaskManager& t) {
     actionsLayout->addWidget(btnEdit);
     actionsLayout->addWidget(btnDelete);
 
-    // Put it all together
-    cardLayout->addLayout(detailsLayout, 3); // 3 parts width
-    cardLayout->addWidget(statusBadge, 1, Qt::AlignCenter); // 1 part width
+    cardLayout->addLayout(detailsLayout, 3); 
+    cardLayout->addWidget(statusBadge, 1, Qt::AlignCenter); 
     cardLayout->addLayout(actionsLayout, 1);
 
-    // Connect buttons to their specific task ID using Lambdas
     int currentId = t.getId();
     connect(btnEdit, &QPushButton::clicked, [this, currentId]() { handleEditTask(currentId); });
     connect(btnDelete, &QPushButton::clicked, [this, currentId]() { handleRemoveTask(currentId); });
@@ -244,7 +259,6 @@ QFrame* MainWindow::createTaskCard(const TaskManager& t) {
 }
 
 void MainWindow::refreshTaskList() {
-    // Clear existing cards
     QLayoutItem *child;
     while ((child = taskListLayout->takeAt(0)) != nullptr) {
         delete child->widget();
@@ -253,7 +267,6 @@ void MainWindow::refreshTaskList() {
 
     std::vector<TaskManager> currentTasks = scheduler.getTasks();
 
-    // Filtering
     QString filter = filterCombo->currentText();
     if (filter != "All") {
         std::vector<TaskManager> filtered;
@@ -263,7 +276,6 @@ void MainWindow::refreshTaskList() {
         currentTasks = filtered;
     }
 
-    // Sorting
     QString sortMode = sortCombo->currentText();
     if (sortMode == "Sort by Importance") {
         std::sort(currentTasks.begin(), currentTasks.end(), [](const TaskManager& a, const TaskManager& b) {
@@ -275,7 +287,6 @@ void MainWindow::refreshTaskList() {
         });
     }
 
-    // Add new cards to the layout
     for (const auto& t : currentTasks) {
         taskListLayout->addWidget(createTaskCard(t));
     }
@@ -314,16 +325,14 @@ void MainWindow::handleRemoveTask(int id) {
     }
 }
 
-// --- NEW RECYCLE BIN DIALOG IMPLEMENTATION ---
 void MainWindow::handleShowRecycleBin() {
     QDialog *binDialog = new QDialog(this);
     binDialog->setWindowTitle("Recycle Bin");
     binDialog->resize(500, 400);
-    binDialog->setAttribute(Qt::WA_DeleteOnClose); // Prevents memory leak when closing dialog
+    binDialog->setAttribute(Qt::WA_DeleteOnClose);
 
     QVBoxLayout *mainLayout = new QVBoxLayout(binDialog);
 
-    // Header with Empty Button
     QHBoxLayout *headerLayout = new QHBoxLayout();
     QLabel *titleLabel = new QLabel("<b>Deleted Tasks</b>", binDialog);
     QPushButton *btnEmpty = new QPushButton("Empty Recycle Bin", binDialog);
@@ -334,7 +343,6 @@ void MainWindow::handleShowRecycleBin() {
     headerLayout->addWidget(btnEmpty);
     mainLayout->addLayout(headerLayout);
 
-    // Scroll Area for Recycled Tasks
     QScrollArea *scrollArea = new QScrollArea(binDialog);
     scrollArea->setWidgetResizable(true);
     QWidget *container = new QWidget(scrollArea);
@@ -343,7 +351,6 @@ void MainWindow::handleShowRecycleBin() {
     scrollArea->setWidget(container);
     mainLayout->addWidget(scrollArea);
 
-    // Wrapping lambda in std::shared_ptr to avoid the auto recursive type deduction issue
     auto refreshBinList = std::make_shared<std::function<void()>>();
     
     *refreshBinList = [this, listLayout, binDialog, refreshBinList]() {
@@ -369,9 +376,7 @@ void MainWindow::handleShowRecycleBin() {
             QHBoxLayout *cardLayout = new QHBoxLayout(card);
 
             QLabel *nameLabel = new QLabel(QString("<b>%1</b> (ID: %2)").arg(QString::fromStdString(t.getTask())).arg(t.getId()));
-            
-            // ---> TEXT COLOR CHANGED HERE <---
-            nameLabel->setStyleSheet("color: #374151;"); // Changes the text to a dark slate gray so it's clearly visible
+            nameLabel->setStyleSheet("color: #374151;"); 
 
             QPushButton *btnRestore = new QPushButton("Restore");
             QPushButton *btnDelete = new QPushButton("Delete");
@@ -388,7 +393,7 @@ void MainWindow::handleShowRecycleBin() {
             
             connect(btnRestore, &QPushButton::clicked, [this, tId, refreshBinList]() {
                 scheduler.restoreTask(tId);
-                (*refreshBinList)(); // Safe execution through dereferenced pointer
+                (*refreshBinList)(); 
                 refreshTaskList();   
             });
             
@@ -401,7 +406,6 @@ void MainWindow::handleShowRecycleBin() {
         }
     };
 
-    // Connect the Empty Bin button
     connect(btnEmpty, &QPushButton::clicked, [this, refreshBinList]() {
         QMessageBox::StandardButton reply = QMessageBox::question(this, "Confirm Empty", "Are you sure you want to permanently delete all tasks in the Recycle Bin?", QMessageBox::Yes|QMessageBox::No);
         if (reply == QMessageBox::Yes) {
@@ -410,7 +414,6 @@ void MainWindow::handleShowRecycleBin() {
         }
     });
 
-    // Populate initially
     (*refreshBinList)();
     binDialog->exec();
 }
