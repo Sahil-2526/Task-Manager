@@ -3,21 +3,16 @@
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceFolder}/**",
-                "C:/Qt/6.11.0/mingw_64/include",
-                "C:/Qt/6.11.0/mingw_64/include/QtWidgets",
-                "C:/Qt/6.11.0/mingw_64/include/QtGui",
-                "C:/Qt/6.11.0/mingw_64/include/QtCore"
+                "${workspaceFolder}/**"
             ],
             "defines": [
                 "_DEBUG",
                 "UNICODE",
                 "_UNICODE"
             ],
-            "compilerPath": "c:/MinGW/bin/g++.exe",
-            "cStandard": "c17",
-            "cppStandard": "c++17",
-            "intelliSenseMode": "windows-gcc-x64",
+            "cStandard": "c11",
+            "cppStandard": "gnu++14",
+            "intelliSenseMode": "windows-gcc-x86",
             "configurationProvider": "ms-vscode.cmake-tools"
         }
     ],
