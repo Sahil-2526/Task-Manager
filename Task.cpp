@@ -79,6 +79,18 @@ void TaskManager::setDeadline(string deadline){
     this->deadline=stringToTime(deadline); 
 }
 void TaskManager::setProgess(double progress){
+    if(progress<0.0) progress=0.0;
+    else if(progress>100.0) progress=100.0;
+
+    if(progress==100.0){
+        setStatus(Status::Completed);
+    }
+    else if(progress>0.0 && progress<100.0){
+        setStatus(Status::InProgress);
+    }
+    else if(progress==0.0){
+        setStatus(Status::Pending);
+    }
     this->progress=progress;
 }
 
