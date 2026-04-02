@@ -51,6 +51,7 @@ private slots:
     void handleLoad();
     void refreshTaskList();
     void handleShowRecycleBin(); 
+    void handleShowTodayTasks(); // New slot for Today's Tasks
 
 private:
     void setupUI();

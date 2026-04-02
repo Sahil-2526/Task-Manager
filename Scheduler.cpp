@@ -11,7 +11,6 @@
 
 using namespace std;
 
-// --- DYNAMIC ID REASSIGNMENT ---
 void Scheduler::reassignIds() {
     int currentId = 1;
     for (auto& t : tasks) { t.setId(currentId++); }
@@ -75,9 +74,7 @@ void Scheduler::updateScore(){
         
         estimatedTimeScore = std::max(0.1, estimatedTimeScore);
         deadlineScore = std::max(0.1, deadlineScore);
-
-        double progressFactor = (t.getProgress() / 100.0);
-        double score = importanceScore * 0.5 + estimatedTimeScore * 0.25 + deadlineScore * 0.25 + progressFactor;
+        double score = importanceScore * 0.5 + estimatedTimeScore * 0.25 + deadlineScore * 0.25;
 
         t.setScore(score);
     }
@@ -178,14 +175,82 @@ void Scheduler::emptyRecycleBin(){
     reassignIds(); 
 }
 
-// --- FILE HANDLING (UPDATED FOR PROGRESS) ---
+// --- TODAY TASKS & AUTO SCHEDULING SYSTEM ---
+
+void Scheduler::addToToday(int taskId, int percent) {
+    if (percent < 1 || percent > 100) return;
+
+    bool exists = false;
+    for (const auto& t : tasks) {
+        if (t.getId() == taskId) { exists = true; break; }
+    }
+    if (!exists) return;
+
+    for (const auto& pair : todayTasks) {
+        if (pair.first == taskId) return;
+    }
+
+    todayTasks.push_back({taskId, percent});
+}
+
+void Scheduler::completeTodayTask(int taskId) {
+    for (auto it = todayTasks.begin(); it != todayTasks.end(); ++it) {
+        if (it->first == taskId) {
+            int targetPercent = it->second;
+
+            for (auto& t : tasks) {
+                if (t.getId() == taskId) {
+                    double newProgress = t.getProgress() + targetPercent;
+                    if (newProgress > 100.0) newProgress = 100.0;
+                    t.setProgess(newProgress); 
+                    break;
+                }
+            }
+            todayTasks.erase(it);
+            return;
+        }
+    }
+}
+
+void Scheduler::showTodayTasks() {
+    if (todayTasks.empty()) { cout << "No tasks scheduled for today.\n"; return; }
+    cout << "\n=== TODAY'S ACTION PLAN ===\n";
+    for (const auto& pair : todayTasks) {
+        try {
+            TaskManager t = findTaskById(pair.first);
+            cout << "[ID: " << t.getId() << "] " << t.getTask() << "\n"
+                 << "    Current Progress: " << t.getProgress() << "%\n"
+                 << "    Goal for Today: +" << pair.second << "%\n";
+        } catch (...) {}
+    }
+}
+
+void Scheduler::autoScheduleToday() {
+    time_t now = time(0);
+    std::tm today = *localtime(&now);
+    
+    for (const auto& t : tasks) {
+        if (t.getHasSchedule() && isSameDay(t.getScheduledDateTm(), today)) {
+            bool alreadyIn = false;
+            for (const auto& pair : todayTasks) {
+                if (pair.first == t.getId()) { alreadyIn = true; break; }
+            }
+            if (!alreadyIn) {
+                todayTasks.push_back({t.getId(), 20});
+            }
+        }
+    }
+}
+
+// --- FILE HANDLING ---
 void Scheduler::saveToFile(const std::string& filename) {
     std::ofstream file(filename);
     if (!file.is_open()) return;
 
     for (auto& t : tasks) {
         file << t.getId() << "|" << t.getTask() << "|" << t.getImportanceLvL() << "|"
-             << t.getEstimatedTime() << "|" << t.getDeadline() << "|" << t.getStatus() << "|" << t.getProgress() << "\n";
+             << t.getEstimatedTime() << "|" << t.getDeadline() << "|" << t.getStatus() << "|" 
+             << t.getProgress() << "|" << t.getHasSchedule() << "|" << t.getScheduledDate() << "\n";
     }
     file.close();
 
@@ -193,7 +258,8 @@ void Scheduler::saveToFile(const std::string& filename) {
     if (!recycleFile.is_open()) return;
     for (auto& t : recycleBinTasks) {
         recycleFile << t.getId() << "|" << t.getTask() << "|" << t.getImportanceLvL() << "|"
-             << t.getEstimatedTime() << "|" << t.getDeadline() << "|" << t.getStatus() << "|" << t.getProgress() << "\n";
+             << t.getEstimatedTime() << "|" << t.getDeadline() << "|" << t.getStatus() << "|" 
+             << t.getProgress() << "|" << t.getHasSchedule() << "|" << t.getScheduledDate() << "\n";
     }
     recycleFile.close();
 }
@@ -202,7 +268,7 @@ void Scheduler::loadFromFile(const std::string& filename) {
     auto parseLine = [](const std::string& line, std::vector<TaskManager>& targetList) {
         if (line.empty()) return;
         std::stringstream ss(line);
-        std::string idStr, taskName, impStr, est, dead, statusStr, progStr;
+        std::string idStr, taskName, impStr, est, dead, statusStr, progStr, hasSchedStr, schedDateStr;
 
         std::getline(ss, idStr, '|');
         std::getline(ss, taskName, '|');
@@ -210,11 +276,15 @@ void Scheduler::loadFromFile(const std::string& filename) {
         std::getline(ss, est, '|');
         std::getline(ss, dead, '|');
         std::getline(ss, statusStr, '|');
-        std::getline(ss, progStr, '|'); // Read progress
+        std::getline(ss, progStr, '|'); 
+        std::getline(ss, hasSchedStr, '|');
+        std::getline(ss, schedDateStr, '|');
 
         TaskManager t(taskName, std::stoi(impStr), est, dead, stringToStatus(statusStr));
         t.setId(std::stoi(idStr)); 
-        if(!progStr.empty()) t.setProgess(std::stod(progStr)); // Set progress
+        if(!progStr.empty()) t.setProgess(std::stod(progStr)); 
+        if(hasSchedStr == "1") t.setScheduledDate(schedDateStr);
+
         targetList.push_back(t);
     };
 

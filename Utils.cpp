@@ -10,9 +10,6 @@ tm stringToTime(std::string s){
     tm time={};
     std::istringstream ss(s); 
     ss>>std::get_time(&time,"%Y-%m-%d %H:%M:%S"); 
-    if (ss.fail()) {   
-        // Kept this silent or handle properly in production so it doesn't spam logs on valid 0-time comparisons
-    }
     return time;
 }
 
@@ -44,34 +41,28 @@ int compareTime(tm t1,tm t2){
 
 // status to string
 std::string statusToString(Status s){
-    if(s==Status::Pending){
-        return "Pending";
-    }
-    else if(s==Status::InProgress){
-        return "In Progress";
-    }
-    else{
-        return "Completed";
-    }
+    if(s==Status::Pending){ return "Pending"; }
+    else if(s==Status::InProgress){ return "In Progress"; }
+    else if(s==Status::All){ return "All"; }
+    else{ return "Completed"; }
 }
 
 // string to status
 Status stringToStatus(std::string s){
-    if(s=="Pending"){
-        return Status::Pending;
-    }
-    else if(s=="In Progress" || s=="InProgress"){ // FIXED: handle input without space
-        return Status::InProgress;
-    }
-    else if(s=="All"){
-        return Status::All; // FIXED: Add All capability
-    }
-    else{
-        return Status::Completed;
-    }
+    if(s=="Pending"){ return Status::Pending; }
+    else if(s=="In Progress" || s=="InProgress"){ return Status::InProgress; }
+    else if(s=="All"){ return Status::All; }
+    else{ return Status::Completed; }
 }
 
 // tm to time_t
 time_t tmTotime_t(tm time){
     return mktime(&time); 
+}
+
+// compare dates
+bool isSameDay(std::tm a, std::tm b){
+    return (a.tm_year == b.tm_year) && 
+           (a.tm_mon == b.tm_mon) && 
+           (a.tm_mday == b.tm_mday);
 }

@@ -7,7 +7,7 @@ int main(int argc, char *argv[]) {
     QString styleSheet = R"(
         /* --- GLOBAL BACKGROUND --- */
         QMainWindow, QDialog {
-            background-color: #09090b; /* Deepest almost-black */
+            background-color: #09090b; 
             font-family: 'Segoe UI', -apple-system, sans-serif;
             color: #e4e4e7;
         }
@@ -24,7 +24,6 @@ int main(int argc, char *argv[]) {
             letter-spacing: 1px;
         }
         
-        /* Sidebar Buttons */
         #sidebar QPushButton {
             text-align: left;
             padding: 12px 16px;
@@ -89,7 +88,6 @@ int main(int argc, char *argv[]) {
             text-transform: uppercase;
         }
 
-        /* Card Buttons */
         #actionButton, #deleteButton {
             background-color: #27272a;
             color: #d4d4d8;

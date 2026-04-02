@@ -17,6 +17,10 @@ private:
     Status status;
     double score;
     
+    // Auto Schedule Variables
+    std::tm scheduledDate;
+    bool hasSchedule;
+    
 public:
     // constructor
     TaskManager(std::string, int, std::string, std::string, Status);
@@ -33,9 +37,13 @@ public:
     std::string getDeadline() const;
     double getScore() const;
     double getProgress() const;
+    
+    bool getHasSchedule() const;
+    std::string getScheduledDate() const;
+    std::tm getScheduledDateTm() const;
 
     // setters function
-    static void setNextId(int); // NEW: To reset the global counter
+    static void setNextId(int); 
     void setId(int);   
     void setScore(double);    
     void setStatus(Status);
@@ -44,6 +52,9 @@ public:
     void setEstimatedTime(std::string);
     void setDeadline(std::string); 
     void setProgess(double);
+    
+    void setScheduledDate(std::string date);
+    void clearScheduledDate();
 };
 
 #endif

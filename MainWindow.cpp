@@ -2,6 +2,7 @@
 #include <QMessageBox>
 #include <QDialogButtonBox>
 #include <QGraphicsDropShadowEffect>
+#include <QInputDialog> // Essential for the percent input
 #include <algorithm>
 #include <map>
 #include <functional> 
@@ -87,6 +88,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     resize(1000, 700);
     setupUI();
     scheduler.loadFromFile("tasks.txt");
+    scheduler.autoScheduleToday(); // Run auto-scheduler on load!
     refreshTaskList();
 }
 
@@ -112,12 +114,14 @@ void MainWindow::setupUI() {
     QPushButton *btnAdd = new QPushButton("+ Create Task", sidebar);
     btnAdd->setObjectName("primaryButton");
     
+    QPushButton *btnToday = new QPushButton("📅 Today's Tasks", sidebar);
     QPushButton *btnNext = new QPushButton("Suggest Next Task", sidebar);
     QPushButton *btnRecycle = new QPushButton("🗑 Recycle Bin", sidebar); 
     QPushButton *btnSave = new QPushButton("Save Data", sidebar);
     QPushButton *btnLoad = new QPushButton("Load Data", sidebar);
 
     sidebarLayout->addWidget(btnAdd);
+    sidebarLayout->addWidget(btnToday);
     sidebarLayout->addWidget(btnNext);
     sidebarLayout->addWidget(btnRecycle); 
     sidebarLayout->addStretch();
@@ -171,6 +175,7 @@ void MainWindow::setupUI() {
     setCentralWidget(centralWidget);
 
     connect(btnAdd, &QPushButton::clicked, this, &MainWindow::handleAddTask);
+    connect(btnToday, &QPushButton::clicked, this, &MainWindow::handleShowTodayTasks);
     connect(btnSave, &QPushButton::clicked, this, &MainWindow::handleSave);
     connect(btnLoad, &QPushButton::clicked, this, &MainWindow::handleLoad);
     connect(btnNext, &QPushButton::clicked, this, &MainWindow::handleNextTask);
@@ -216,7 +221,7 @@ QFrame* MainWindow::createTaskCard(const TaskManager& t) {
     QProgressBar *progressBar = new QProgressBar(card);
     progressBar->setRange(0, 100);
     progressBar->setValue(static_cast<int>(t.getProgress()));
-    progressBar->setTextVisible(false); // Text is handled by progressLabel
+    progressBar->setTextVisible(false);
     progressBar->setFixedHeight(6);
     progressBar->setObjectName("taskProgressBar");
 
@@ -228,7 +233,6 @@ QFrame* MainWindow::createTaskCard(const TaskManager& t) {
     detailsLayout->addWidget(dateLabel);
     detailsLayout->addLayout(progressLayout); 
 
-    // Middle Column: Status Badge
     QLabel *statusBadge = new QLabel(QString::fromStdString(t.getStatus()), card);
     statusBadge->setObjectName("statusBadge");
     statusBadge->setAlignment(Qt::AlignCenter);
@@ -237,13 +241,17 @@ QFrame* MainWindow::createTaskCard(const TaskManager& t) {
     else if(t.getStatus() == "In Progress") statusBadge->setStyleSheet("background-color: rgba(59, 130, 246, 0.2); color: #93c5fd;");
     else statusBadge->setStyleSheet("background-color: rgba(16, 185, 129, 0.2); color: #6ee7b7;");
 
-    // Right Column: Action Buttons
     QVBoxLayout *actionsLayout = new QVBoxLayout();
+    
+    QPushButton *btnAddToToday = new QPushButton("+ Today", card);
+    btnAddToToday->setStyleSheet("background-color: #8b5cf6; color: white; border: none; border-radius: 6px; padding: 8px; font-weight: 600;");
+    
     QPushButton *btnEdit = new QPushButton("Edit", card);
     QPushButton *btnDelete = new QPushButton("Delete", card);
     btnEdit->setObjectName("actionButton");
     btnDelete->setObjectName("deleteButton");
 
+    actionsLayout->addWidget(btnAddToToday);
     actionsLayout->addWidget(btnEdit);
     actionsLayout->addWidget(btnDelete);
 
@@ -252,6 +260,16 @@ QFrame* MainWindow::createTaskCard(const TaskManager& t) {
     cardLayout->addLayout(actionsLayout, 1);
 
     int currentId = t.getId();
+    
+    connect(btnAddToToday, &QPushButton::clicked, [this, currentId]() { 
+        bool ok;
+        int percent = QInputDialog::getInt(this, "Add to Today", "Target percentage to complete today (1-100):", 20, 1, 100, 1, &ok);
+        if (ok) {
+            scheduler.addToToday(currentId, percent);
+            QMessageBox::information(this, "Success", "Task added to today's action plan!");
+        }
+    });
+
     connect(btnEdit, &QPushButton::clicked, [this, currentId]() { handleEditTask(currentId); });
     connect(btnDelete, &QPushButton::clicked, [this, currentId]() { handleRemoveTask(currentId); });
 
@@ -418,6 +436,94 @@ void MainWindow::handleShowRecycleBin() {
     binDialog->exec();
 }
 
+// ==========================================
+// TODAY'S TASKS DIALOG IMPLEMENTATION
+// ==========================================
+void MainWindow::handleShowTodayTasks() {
+    QDialog *todayDialog = new QDialog(this);
+    todayDialog->setWindowTitle("Today's Action Plan");
+    todayDialog->resize(500, 450);
+    todayDialog->setAttribute(Qt::WA_DeleteOnClose);
+    todayDialog->setStyleSheet("background-color: #09090b;"); 
+
+    QVBoxLayout *mainLayout = new QVBoxLayout(todayDialog);
+
+    QLabel *titleLabel = new QLabel("<b>Tasks Scheduled For Today</b>", todayDialog);
+    titleLabel->setStyleSheet("font-size: 18px; color: #ffffff; padding-bottom: 10px;");
+    mainLayout->addWidget(titleLabel);
+
+    QScrollArea *scrollArea = new QScrollArea(todayDialog);
+    scrollArea->setWidgetResizable(true);
+    scrollArea->setFrameShape(QFrame::NoFrame);
+    QWidget *container = new QWidget(scrollArea);
+    container->setStyleSheet("background-color: #09090b;");
+    QVBoxLayout *listLayout = new QVBoxLayout(container);
+    listLayout->setAlignment(Qt::AlignTop);
+    scrollArea->setWidget(container);
+    mainLayout->addWidget(scrollArea);
+
+    auto refreshTodayList = std::make_shared<std::function<void()>>();
+    
+    *refreshTodayList = [this, listLayout, refreshTodayList]() {
+        QLayoutItem *child;
+        while ((child = listLayout->takeAt(0)) != nullptr) {
+            delete child->widget();
+            delete child;
+        }
+
+        const auto& todayList = scheduler.getTodayTasks();
+        if(todayList.empty()) {
+            QLabel* emptyLabel = new QLabel("No tasks scheduled for today.\nTake a break or schedule something new!");
+            emptyLabel->setAlignment(Qt::AlignCenter);
+            emptyLabel->setStyleSheet("color: #a1a1aa; font-size: 14px; margin-top: 30px;");
+            listLayout->addWidget(emptyLabel);
+            return;
+        }
+
+        for (const auto& pair : todayList) {
+            int tId = pair.first;
+            int targetPercent = pair.second;
+            
+            try {
+                TaskManager t = scheduler.findTaskById(tId);
+                
+                QFrame *card = new QFrame();
+                card->setStyleSheet("background-color: #18181b; border: 1px solid #27272a; border-radius: 8px; margin-bottom: 10px;");
+                QHBoxLayout *cardLayout = new QHBoxLayout(card);
+
+                QVBoxLayout *textLayout = new QVBoxLayout();
+                QLabel *nameLabel = new QLabel(QString("<b>%1</b>").arg(QString::fromStdString(t.getTask())));
+                nameLabel->setStyleSheet("color: #f4f4f5; font-size: 15px; border: none;");
+                
+                QLabel *detailLabel = new QLabel(QString("Current Total: %1%  |  Today's Goal: +%2%").arg(t.getProgress(), 0, 'f', 1).arg(targetPercent));
+                detailLabel->setStyleSheet("color: #a1a1aa; font-size: 12px; border: none;");
+                
+                textLayout->addWidget(nameLabel);
+                textLayout->addWidget(detailLabel);
+
+                QPushButton *btnComplete = new QPushButton("Complete Goal");
+                btnComplete->setStyleSheet("background-color: #10b981; color: white; padding: 8px 12px; border-radius: 6px; font-weight: bold; border: none;");
+                btnComplete->setCursor(Qt::PointingHandCursor);
+
+                cardLayout->addLayout(textLayout);
+                cardLayout->addStretch();
+                cardLayout->addWidget(btnComplete);
+
+                connect(btnComplete, &QPushButton::clicked, [this, tId, refreshTodayList]() {
+                    scheduler.completeTodayTask(tId);
+                    (*refreshTodayList)(); 
+                    refreshTaskList();     
+                });
+
+                listLayout->addWidget(card);
+            } catch (...) {} 
+        }
+    };
+
+    (*refreshTodayList)(); 
+    todayDialog->exec();
+}
+
 void MainWindow::handleNextTask() {
     try {
         TaskManager bestTask = scheduler.nextTask();
@@ -432,6 +538,7 @@ void MainWindow::handleSave() {
 
 void MainWindow::handleLoad() {
     scheduler.loadFromFile("tasks.txt");
+    scheduler.autoScheduleToday(); 
     refreshTaskList();
     QMessageBox::information(this, "Load Successful", "Your tasks have been loaded.");
 }
