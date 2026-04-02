@@ -75,7 +75,9 @@ void Scheduler::updateScore(){
         
         estimatedTimeScore = std::max(0.1, estimatedTimeScore);
         deadlineScore = std::max(0.1, deadlineScore);
-        double score = importanceScore * 0.5 + estimatedTimeScore * 0.25 + deadlineScore * 0.25;
+
+        double progressFactor = (t.getProgress() / 100.0);
+        double score = importanceScore * 0.5 + estimatedTimeScore * 0.25 + deadlineScore * 0.25 + progressFactor;
 
         t.setScore(score);
     }
