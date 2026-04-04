@@ -62,6 +62,13 @@ void Scheduler::updateScore(){
     double avgImportance = avgImportanceLevel();
 
     for(TaskManager& t : tasks){
+        // Force importance and score to 0 if task is completed
+        if (t.getStatus() == "Completed" || t.getProgress() >= 100.0) {
+            t.setImportanceLvL(0);
+            t.setScore(0.0);
+            continue;
+        }
+
         time_t taskEstimatedTime = tmTotime_t(stringToTime(t.getEstimatedTime()));
         time_t taskDeadline = tmTotime_t(stringToTime(t.getDeadline())) - time(0);
 
@@ -121,30 +128,49 @@ TaskManager Scheduler::findTaskById(int id){
 }
 
 double Scheduler::avgEstimatedTime(){
-    if(tasks.size()==0) return 0;
+    int count = 0;
     double totalSeconds=0;
-    for(TaskManager t:tasks) totalSeconds+=tmTotime_t(stringToTime(t.getEstimatedTime()));  
-    return totalSeconds/tasks.size(); 
+    for(TaskManager t:tasks) {
+        if(t.getStatus() != "Completed") { // Ignore completed tasks in average
+            totalSeconds+=tmTotime_t(stringToTime(t.getEstimatedTime()));  
+            count++;
+        }
+    }
+    return count == 0 ? 0 : totalSeconds/count; 
 }
 
 double Scheduler::avgTimeToDeadline(){
-    if(tasks.size()==0) return 0;
+    int count = 0;
     double totalSeconds=0;
-    for(TaskManager t:tasks) totalSeconds+=tmTotime_t(stringToTime(t.getDeadline()))-time(0); 
-    return totalSeconds/tasks.size(); 
+    for(TaskManager t:tasks) {
+        if(t.getStatus() != "Completed") { // Ignore completed tasks in average
+            totalSeconds+=tmTotime_t(stringToTime(t.getDeadline()))-time(0); 
+            count++;
+        }
+    }
+    return count == 0 ? 0 : totalSeconds/count; 
 }
 
 double Scheduler::avgImportanceLevel(){
-    if(tasks.size()==0) return 0;
+    int count = 0;
     double totalImportance=0;
-    for(TaskManager t:tasks) totalImportance+=t.getImportanceLvL();
-    return totalImportance/tasks.size(); 
+    for(TaskManager t:tasks) {
+        if(t.getStatus() != "Completed") { // Ignore completed tasks in average
+            totalImportance+=t.getImportanceLvL();
+            count++;
+        }
+    }
+    return count == 0 ? 0 : totalImportance/count; 
 }
 
 TaskManager Scheduler::nextTask(){
     if(tasks.size()==0) throw invalid_argument("No tasks."); 
     TaskManager* next=nullptr;
-    for(TaskManager& t:tasks){ if(next==nullptr || t.getScore()>next->getScore()) next=&t; }
+    for(TaskManager& t:tasks){ 
+        if (t.getStatus() == "Completed") continue; // Don't suggest completed tasks
+        if(next==nullptr || t.getScore()>next->getScore()) next=&t; 
+    }
+    if(next == nullptr) throw invalid_argument("All tasks completed.");
     return *next;
 }
 
@@ -201,12 +227,16 @@ void Scheduler::completeTodayTask(int taskId) {
             for (auto& t : tasks) {
                 if (t.getId() == taskId) {
                     double newProgress = t.getProgress() + targetPercent;
-                    if (newProgress > 100.0) newProgress = 100.0;
+                    if (newProgress >= 100.0) {
+                        newProgress = 100.0;
+                        t.setImportanceLvL(0); // Set importance to 0 upon completion
+                    }
                     t.setProgess(newProgress); 
                     break;
                 }
             }
             todayTasks.erase(it);
+            updateScore(); // Refresh scores immediately 
             return;
         }
     }
