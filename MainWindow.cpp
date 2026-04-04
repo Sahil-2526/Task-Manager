@@ -2,7 +2,7 @@
 #include <QMessageBox>
 #include <QDialogButtonBox>
 #include <QGraphicsDropShadowEffect>
-#include <QInputDialog> // Essential for the percent input
+#include <QInputDialog> 
 #include <algorithm>
 #include <map>
 #include <functional> 
@@ -49,9 +49,42 @@ TaskDialog::TaskDialog(QWidget *parent) : QDialog(parent) {
 
     connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
+
+    // ==========================================
+    // LIVE SYNC BETWEEN PROGRESS AND STATUS
+    // ==========================================
+    
+    // 1. If Progress is changed manually
+    connect(progressSpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [this](double val) {
+        if (val == 100.0 && statusCombo->currentText() != "Completed") {
+            statusCombo->setCurrentText("Completed");
+        } else if (val == 0.0 && statusCombo->currentText() != "Pending") {
+            statusCombo->setCurrentText("Pending");
+        } else if (val > 0.0 && val < 100.0 && statusCombo->currentText() != "In Progress") {
+            statusCombo->setCurrentText("In Progress");
+        }
+    });
+
+    // 2. If Status Dropdown is changed manually
+    connect(statusCombo, &QComboBox::currentTextChanged, [this](const QString &text) {
+        if (text == "Completed" && progressSpin->value() != 100.0) {
+            progressSpin->setValue(100.0);
+        } else if (text == "Pending" && progressSpin->value() != 0.0) {
+            progressSpin->setValue(0.0);
+        } else if (text == "In Progress") {
+            // If selected "In Progress" but progress is at 0 or 100, bump it to 1%
+            if (progressSpin->value() == 0.0 || progressSpin->value() == 100.0) {
+                progressSpin->setValue(1.0);
+            }
+        }
+    });
 }
 
 void TaskDialog::setTaskData(const TaskManager& task) {
+    // Block signals temporarily so the live-sync doesn't trigger while loading existing data
+    progressSpin->blockSignals(true);
+    statusCombo->blockSignals(true);
+
     nameEdit->setText(QString::fromStdString(task.getTask()));
     importanceSpin->setValue(task.getImportanceLvL());
     
@@ -63,6 +96,10 @@ void TaskDialog::setTaskData(const TaskManager& task) {
     
     progressSpin->setValue(task.getProgress()); 
     statusCombo->setCurrentText(QString::fromStdString(task.getStatus()));
+
+    // Unblock signals after setup is complete
+    progressSpin->blockSignals(false);
+    statusCombo->blockSignals(false);
 }
 
 TaskManager TaskDialog::getTaskData(int id) const {

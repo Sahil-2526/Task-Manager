@@ -1,13 +1,11 @@
 cmake_minimum_required(VERSION 3.16)
 project(TaskScheduler)
 
-# Find Qt6 - Ensure this matches your installed version
-# Added "Charts" here
-find_package(Qt6 REQUIRED COMPONENTS Widgets Charts)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Charts Gui)
 
-set(CMAKE_AUTOMOC ON) # Handles Q_OBJECT macros
-set(CMAKE_AUTOUIC ON) # Handles .ui to ui_MainWindow.h conversion
-set(CMAKE_AUTORCC ON) # Handles resources
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
 
 add_executable(TaskScheduler
     main.cpp
@@ -21,5 +19,9 @@ add_executable(TaskScheduler
     Utils.h
 )
 
-# Added "Qt6::Charts" here
-target_link_libraries(TaskScheduler PRIVATE Qt6::Widgets Qt6::Charts)
+target_link_libraries(TaskScheduler 
+    PRIVATE 
+    Qt6::Widgets 
+    Qt6::Charts 
+    Qt6::Gui
+)
