@@ -54,7 +54,6 @@ TaskDialog::TaskDialog(QWidget *parent) : QDialog(parent) {
     // LIVE SYNC BETWEEN PROGRESS AND STATUS
     // ==========================================
     
-    // 1. If Progress is changed manually
     connect(progressSpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [this](double val) {
         if (val == 100.0 && statusCombo->currentText() != "Completed") {
             statusCombo->setCurrentText("Completed");
@@ -65,14 +64,12 @@ TaskDialog::TaskDialog(QWidget *parent) : QDialog(parent) {
         }
     });
 
-    // 2. If Status Dropdown is changed manually
     connect(statusCombo, &QComboBox::currentTextChanged, [this](const QString &text) {
         if (text == "Completed" && progressSpin->value() != 100.0) {
             progressSpin->setValue(100.0);
         } else if (text == "Pending" && progressSpin->value() != 0.0) {
             progressSpin->setValue(0.0);
         } else if (text == "In Progress") {
-            // If selected "In Progress" but progress is at 0 or 100, bump it to 1%
             if (progressSpin->value() == 0.0 || progressSpin->value() == 100.0) {
                 progressSpin->setValue(1.0);
             }
@@ -81,7 +78,6 @@ TaskDialog::TaskDialog(QWidget *parent) : QDialog(parent) {
 }
 
 void TaskDialog::setTaskData(const TaskManager& task) {
-    // Block signals temporarily so the live-sync doesn't trigger while loading existing data
     progressSpin->blockSignals(true);
     statusCombo->blockSignals(true);
 
@@ -97,7 +93,6 @@ void TaskDialog::setTaskData(const TaskManager& task) {
     progressSpin->setValue(task.getProgress()); 
     statusCombo->setCurrentText(QString::fromStdString(task.getStatus()));
 
-    // Unblock signals after setup is complete
     progressSpin->blockSignals(false);
     statusCombo->blockSignals(false);
 }
@@ -125,8 +120,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     resize(1000, 700);
     setupUI();
     scheduler.loadFromFile("tasks.txt");
-    scheduler.autoScheduleToday(); // Run auto-scheduler on load!
+    scheduler.autoScheduleToday(); 
     refreshTaskList();
+
+    // Setup Auto-Save Timer (runs every 60 seconds)
+    QTimer *autoSaveTimer = new QTimer(this);
+    connect(autoSaveTimer, &QTimer::timeout, this, &MainWindow::performAutoSave);
+    autoSaveTimer->start(60000); 
 }
 
 void MainWindow::setupUI() {
@@ -135,7 +135,6 @@ void MainWindow::setupUI() {
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
 
-    // --- SIDEBAR ---
     QFrame *sidebar = new QFrame(this);
     sidebar->setObjectName("sidebar");
     sidebar->setFixedWidth(220);
@@ -167,7 +166,6 @@ void MainWindow::setupUI() {
 
     mainLayout->addWidget(sidebar);
 
-    // --- MAIN CONTENT AREA ---
     QWidget *contentArea = new QWidget(this);
     contentArea->setObjectName("contentArea");
     QVBoxLayout *contentLayout = new QVBoxLayout(contentArea);
@@ -221,11 +219,10 @@ void MainWindow::setupUI() {
     connect(sortCombo, &QComboBox::currentTextChanged, this, &MainWindow::refreshTaskList);
 }
 
-// --- CREATING THE VISUAL TASK CARD ---
 QFrame* MainWindow::createTaskCard(const TaskManager& t) {
     QFrame *card = new QFrame(taskContainerWidget);
     card->setObjectName("taskCard");
-    card->setFixedHeight(160);
+    card->setFixedHeight(160); 
 
     QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(card);
     shadow->setBlurRadius(15);
@@ -250,7 +247,6 @@ QFrame* MainWindow::createTaskCard(const TaskManager& t) {
     QLabel *dateLabel = new QLabel("⏱ Deadline: " + QString::fromStdString(t.getDeadline()), card);
     dateLabel->setObjectName("cardDate");
 
-    // --- VIEW-ONLY PROGRESS BAR ---
     QHBoxLayout *progressLayout = new QHBoxLayout();
     QLabel *progressLabel = new QLabel(QString::number(t.getProgress(), 'f', 1) + "%", card);
     progressLabel->setStyleSheet("color: #a1a1aa; font-size: 12px; font-weight: bold; width: 40px;");
@@ -279,9 +275,10 @@ QFrame* MainWindow::createTaskCard(const TaskManager& t) {
     else statusBadge->setStyleSheet("background-color: rgba(16, 185, 129, 0.2); color: #6ee7b7;");
 
     QVBoxLayout *actionsLayout = new QVBoxLayout();
+    actionsLayout->setSpacing(8);
     
     QPushButton *btnAddToToday = new QPushButton("+ Today", card);
-    btnAddToToday->setStyleSheet("background-color: #8b5cf6; color: white; border: none; border-radius: 6px; padding: 8px; font-weight: 600;");
+    btnAddToToday->setStyleSheet("background-color: #8b5cf6; color: white; border: none; border-radius: 6px; padding: 10px 14px; font-weight: bold; font-size: 13px; min-width: 85px;");
     
     QPushButton *btnEdit = new QPushButton("Edit", card);
     QPushButton *btnDelete = new QPushButton("Delete", card);
@@ -473,9 +470,6 @@ void MainWindow::handleShowRecycleBin() {
     binDialog->exec();
 }
 
-// ==========================================
-// TODAY'S TASKS DIALOG IMPLEMENTATION
-// ==========================================
 void MainWindow::handleShowTodayTasks() {
     QDialog *todayDialog = new QDialog(this);
     todayDialog->setWindowTitle("Today's Action Plan");
@@ -578,4 +572,19 @@ void MainWindow::handleLoad() {
     scheduler.autoScheduleToday(); 
     refreshTaskList();
     QMessageBox::information(this, "Load Successful", "Your tasks have been loaded.");
+}
+
+// ==========================================
+// AUTO-SAVE IMPLEMENTATIONS
+// ==========================================
+
+void MainWindow::performAutoSave() {
+    // Silently save the tasks in the background
+    scheduler.saveToFile("tasks.txt");
+}
+
+void MainWindow::closeEvent(QCloseEvent *event) {
+    // This triggers automatically when the user clicks the 'X' to close the app
+    scheduler.saveToFile("tasks.txt");
+    event->accept();
 }
